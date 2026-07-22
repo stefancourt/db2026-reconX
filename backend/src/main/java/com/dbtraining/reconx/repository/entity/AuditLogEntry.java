@@ -3,6 +3,10 @@ package com.dbtraining.reconx.repository.entity;
 import jakarta.persistence.*;
 import java.time.Instant;
 
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
+
 /**
  * TICKET-ADV132 / ADV137 — Append-only audit row written by AuditEventConsumer.
  * Used for the event-sourcing rebuild of trade state (TICKET-ADV137).
@@ -33,12 +37,15 @@ public class AuditLogEntry {
     // No @Lob — Hibernate 6 + Postgres treats @Lob String as OID column,
     // but Liquibase translates CLOB to TEXT. columnDefinition keeps both DBs
     // happy (H2 accepts TEXT in Postgres mode, Postgres uses it natively).
+    @JdbcTypeCode(SqlTypes.LONGVARCHAR)
     @Column(name = "before_state", columnDefinition = "TEXT")
     private String beforeState;
 
+    @JdbcTypeCode(SqlTypes.LONGVARCHAR)
     @Column(name = "after_state", columnDefinition = "TEXT")
     private String afterState;
 
+    
     public AuditLogEntry() {}
 
     public AuditLogEntry(String eventId, String tradeRef, String eventType,

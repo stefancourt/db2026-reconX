@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+                            http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <changeSet id="011-mv-daily-recon-summary" author="trainer">
+        <preConditions onFail="MARK_RAN">
+            <dbms type="postgresql"/>
+        </preConditions>
+        <sql splitStatements="true"><![CDATA[
+            -- 1. Create the materialized view without locking the table for data population
+            CREATE MATERIALIZED VIEW mv_daily_recon_summary AS
+            SELECT 
+                t.trade_date, 
+                t.region, 
+                i.asset_class,
+                COUNT(*) AS total_trades,
+                COUNT(*) FILTER (WHERE t.status = 'MATCHED') AS matched_trades,
+                COUNT(*) FILTER (WHERE t.status IN ('UNMATCHED', 'DISPUTED')) AS open_breaks,
+                ROUND(SUM(t.quantity * t.price)::NUMERIC, 2) AS gross_notional,
+                ROUND((COUNT(*) FILTER (WHERE t.status = 'MATCHED')::NUMERIC / COUNT(*)) * 100, 2) AS match_rate_pct
+            FROM trades t
+            JOIN counterparties c ON t.counterparty_id = c.id
+            JOIN instruments i ON t.instrument_id = i.id
+            LEFT JOIN recon_breaks rb ON t.id = rb.trade_id
+            WHERE t.deleted_at IS NULL
+            GROUP BY t.trade_date, t.region, i.asset_class
+            WITH NO DATA;
+
+            -- 2. Create the hard prerequisite UNIQUE INDEX for concurrent refreshes
+            CREATE UNIQUE INDEX uq_mv_daily_recon_summary 
+                ON mv_daily_recon_summary (trade_date, region, asset_class);
+                
+            -- 3. Create secondary indexes for the most common dashboard filters
+            CREATE INDEX idx_mv_daily_recon_summary_date ON mv_daily_recon_summary(trade_date);
+            CREATE INDEX idx_mv_daily_recon_summary_region ON mv_daily_recon_summary(region);
+        ]]></sql>
+        <rollback>
+            <sql>DROP MATERIALIZED VIEW IF EXISTS mv_daily_recon_summary;</sql>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>
