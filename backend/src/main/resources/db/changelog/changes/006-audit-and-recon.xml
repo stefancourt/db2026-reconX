@@ -17,6 +17,11 @@
                             http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
 
     <changeSet id="006-create-audit-log" author="trainer">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="audit_log"/>
+            </not>
+        </preConditions>
         <createTable tableName="audit_log">
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true"/>
@@ -38,6 +43,11 @@
     </changeSet>
 
     <changeSet id="006-create-recon-breaks" author="trainer">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="recon_breaks"/>
+            </not>
+        </preConditions>
         <createTable tableName="recon_breaks">
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true"/>
@@ -58,6 +68,11 @@
     </changeSet>
 
     <changeSet id="006-create-recon-jobs" author="trainer">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="recon_jobs"/>
+            </not>
+        </preConditions>
         <createTable tableName="recon_jobs">
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true"/>
