@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ ============================================================================
+ TICKET-ADV132 / ADV137 / ADV138 — audit_log + recon_breaks + recon_jobs
+ WHAT:    audit_log: append-only event row per trade event (used by
+          AuditEventConsumer + event-sourcing rebuild). recon_breaks: open
+          break details with discrepancy type. recon_jobs: async recon job
+          tracking for POST /api/v1/recon/run.
+ WHY:     Without audit_log, "show me every change to this trade" is not
+          answerable. Without recon_breaks, breaks live in app memory only.
+ ============================================================================
+-->
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                            http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <changeSet id="006-create-audit-log" author="trainer">
+        <createTable tableName="audit_log">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="event_id" type="VARCHAR(36)"><constraints nullable="false" unique="true"/></column>
+            <column name="trade_ref" type="VARCHAR(30)"><constraints nullable="false"/></column>
+            <column name="event_type" type="VARCHAR(30)"><constraints nullable="false"/></column>
+            <column name="event_timestamp" type="TIMESTAMP"><constraints nullable="false"/></column>
+            <column name="actor" type="VARCHAR(100)"/>
+            <column name="before_state" type="CLOB"/>
+            <column name="after_state" type="CLOB"/>
+        </createTable>
+        <createIndex tableName="audit_log" indexName="idx_audit_log_trade_ref">
+            <column name="trade_ref"/>
+        </createIndex>
+        <rollback>
+            <dropTable tableName="audit_log"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="006-create-recon-breaks" author="trainer">
+        <createTable tableName="recon_breaks">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="trade_id" type="BIGINT"><constraints nullable="false"/></column>
+            <column name="discrepancy_type" type="VARCHAR(30)"><constraints nullable="false"/></column>
+            <column name="status" type="VARCHAR(20)" defaultValue="OPEN"><constraints nullable="false"/></column>
+            <column name="detected_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="resolved_at" type="TIMESTAMP"/>
+            <column name="resolution_note" type="VARCHAR(500)"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="recon_breaks" baseColumnNames="trade_id"
+                                 constraintName="fk_recon_breaks_trade"
+                                 referencedTableName="trades" referencedColumnNames="id"/>
+        <rollback>
+            <dropTable tableName="recon_breaks"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="006-create-recon-jobs" author="trainer">
+        <createTable tableName="recon_jobs">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="job_id" type="VARCHAR(36)"><constraints nullable="false" unique="true"/></column>
+            <column name="from_date" type="DATE"><constraints nullable="false"/></column>
+            <column name="to_date" type="DATE"><constraints nullable="false"/></column>
+            <column name="status" type="VARCHAR(20)" defaultValue="QUEUED"/>
+            <column name="started_at" type="TIMESTAMP"/>
+            <column name="finished_at" type="TIMESTAMP"/>
+            <column name="trades_processed" type="INT" defaultValueNumeric="0"/>
+            <column name="breaks_detected" type="INT" defaultValueNumeric="0"/>
+        </createTable>
+        <rollback>
+            <dropTable tableName="recon_jobs"/>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ ============================================================================
+ TICKET-ADV017 — Seed data (counterparties, instruments, sample trades, users)
+ WHAT:    Loads CSV files baked into the JAR.
+ HOW:     <loadData> reads from classpath — paths are relative to the
+          changeSet file. CSV headers must match column names.
+ WHY:     The student copy ships an empty DB; the trainer copy ships seeded
+          data so demos work the moment the app boots.
+ OBSERVE: SELECT count(*) FROM counterparties → 10. trades → 500.
+          users → 4 (admin/trader/viewer/recon analyst).
+ ============================================================================
+-->
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                            http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <changeSet id="008-seed-counterparties" author="trainer">
+        <loadData file="data/counterparties.csv" tableName="counterparties"
+                  separator="," relativeToChangelogFile="true">
+            <column name="id" type="NUMERIC"/>
+            <column name="name" type="STRING"/>
+            <column name="lei_code" type="STRING"/>
+            <column name="region" type="STRING"/>
+        </loadData>
+        <rollback>
+            <sql>DELETE FROM counterparties;</sql>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="008-seed-instruments" author="trainer">
+        <loadData file="data/instruments.csv" tableName="instruments"
+                  separator="," relativeToChangelogFile="true">
+            <column name="id" type="NUMERIC"/>
+            <column name="symbol" type="STRING"/>
+            <column name="name" type="STRING"/>
+            <column name="asset_class" type="STRING"/>
+            <column name="currency" type="STRING"/>
+            <column name="isin" type="STRING"/>
+        </loadData>
+        <rollback>
+            <sql>DELETE FROM instruments;</sql>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="008-seed-users" author="trainer">
+        <!-- Real BCrypt hashes (cost=10) for admin123 / trader123 / viewer123 / recon123.
+             Generated via: htpasswd -bnBC 10 "" <pw> | tr -d ':\n'
+             Spring Security's BCryptPasswordEncoder accepts both $2a$ and $2y$ prefixes. -->
+        <insert tableName="users">
+            <column name="email" value="admin@db.com"/>
+            <column name="password_hash" value="$2y$10$L9iP3BfsBS2LbVJRfc86TuWnJvP.AohjX3PNLwdtjlZfyB7YSp87C"/>
+            <column name="role" value="ADMIN"/>
+        </insert>
+        <insert tableName="users">
+            <column name="email" value="trader@db.com"/>
+            <column name="password_hash" value="$2y$10$LIpkayi0QDWyVguPtEQbkOATM7PTnMKFDNq47K92TUx2LHTBFQf1i"/>
+            <column name="role" value="TRADER"/>
+        </insert>
+        <insert tableName="users">
+            <column name="email" value="viewer@db.com"/>
+            <column name="password_hash" value="$2y$10$gC8J5Tzr15p4V6BgbbEFGOEb4VWM4YUOAdKEeyFlXtEvYolYblCVC"/>
+            <column name="role" value="VIEWER"/>
+        </insert>
+        <insert tableName="users">
+            <column name="email" value="recon@db.com"/>
+            <column name="password_hash" value="$2y$10$UVYhlvPX38zSdPhY6bz4ee453bh6gXp9guhAfV5IU2SjcWPm0eWKq"/>
+            <column name="role" value="RECON_ANALYST"/>
+        </insert>
+        <rollback>
+            <sql>DELETE FROM users;</sql>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>
