@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ ============================================================================
+ TICKET-ADV009 — JSONB column on instruments (+ GIN index on Postgres)
+ WHAT:    instruments.metadata as JSONB to hold per-asset-class detail
+          (e.g. dividend yield, country, sector).
+ HOW:     Postgres-only step; H2 dialect lacks JSONB. The precondition guards
+          dialect so dev (H2) skips the column entirely.
+ WHY:     Schemaless metadata avoids 12 columns that only apply to one asset
+          class. Trade-off: validation moves to the app layer.
+ OBSERVE: \d instruments shows metadata jsonb. EXPLAIN ANALYZE on a metadata
+          ->> 'sector' lookup hits idx_instruments_metadata_gin.
+ ============================================================================
+-->
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                            http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <changeSet id="003-jsonb-on-instruments" author="trainer">
+        <preConditions onFail="MARK_RAN">
+            <dbms type="postgresql"/>
+        </preConditions>
+        <sql>ALTER TABLE instruments ADD COLUMN metadata JSONB DEFAULT '{}'::JSONB NOT NULL;</sql>
+        <sql>CREATE INDEX idx_instruments_metadata_gin ON instruments USING GIN (metadata jsonb_path_ops);</sql>
+        <rollback>
+            <sql>DROP INDEX IF EXISTS idx_instruments_metadata_gin;</sql>
+            <sql>ALTER TABLE instruments DROP COLUMN metadata;</sql>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

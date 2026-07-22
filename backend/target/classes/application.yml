@@ -1,0 +1,114 @@
+# =============================================================================
+# TICKET-ADV049 — Spring profile configuration (default + profile overrides)
+#
+# WHAT:    Base configuration shared across dev/uat/prod. Profile-specific
+#          overrides live in application-{profile}.yml.
+# HOW:     `spring.profiles.active` selects the override file. Each ticket
+#          surface (Kafka, JWT, cache, metrics) has a sensible default here.
+# WHY:     Multi-env config is a Day 4 sprint deliverable. Without profile
+#          separation, teams ship secrets to dev or run prod migrations on UAT.
+# OBSERVE: Boot the app with `-Dspring-boot.run.profiles=dev` — H2 is used,
+#          Liquibase runs, sample users are seeded.
+# =============================================================================
+spring:
+  application:
+    name: reconx
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+
+  # ADV012 — Liquibase classpath wiring (the classic starter bug is missing the
+  # `classpath:` prefix here, which causes a silent skip on JAR builds).
+  liquibase:
+    change-log: classpath:/db/changelog/db.changelog-master.xml
+    enabled: true
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate.format_sql: true
+      hibernate.jdbc.time_zone: UTC
+
+  # ADV081-ADV082 — Caffeine cache config; per-cache spec overrides the global one.
+  cache:
+    cache-names: instruments,counterparties
+    caffeine:
+      spec: maximumSize=500,expireAfterWrite=5m
+
+  # ADV128 — Kafka producer/consumer defaults. Topics are created at startup
+  # by KafkaTopicsConfig (see com.dbtraining.reconx.kafka.KafkaTopicsConfig).
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.add.type.headers: false
+    consumer:
+      group-id: reconx-service
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: com.dbtraining.reconx.dto
+        spring.json.use.type.headers: false
+        spring.json.value.default.type: com.dbtraining.reconx.dto.TradeEvent
+
+server:
+  servlet:
+    context-path: /api
+
+# =============================================================================
+# TICKET-ADV083-ADV086 / ADV097 — Actuator + Prometheus exposure
+#  Custom metrics registered by com.dbtraining.reconx.observability.TradeMetrics
+#  scrape via /actuator/prometheus.
+# =============================================================================
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus,env,loggers
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: when_authorized
+      probes:
+        enabled: true
+  metrics:
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+        reconciliation.duration: true
+      percentiles:
+        http.server.requests: 0.5, 0.95, 0.99
+    tags:
+      application: ${spring.application.name}
+
+# =============================================================================
+# TICKET-ADV072 — JWT signing config (NEVER commit a real secret; override per env)
+# =============================================================================
+reconx:
+  security:
+    jwt:
+      # dev secret only — UAT/PROD MUST override via env var
+      secret: ${JWT_SECRET:dev-secret-change-me-32-bytes-min!!}
+      expiration-minutes: ${JWT_EXP_MIN:60}
+      refresh-expiration-days: ${JWT_REFRESH_EXP_DAYS:7}
+      issuer: reconx
+
+logging:
+  level:
+    com.dbtraining.reconx: INFO
+    org.springframework.web: INFO
+    org.hibernate.SQL: WARN
+  pattern:
+    correlation: "[%X{correlationId:-}] [%X{tradeRef:-}]"
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    tagsSorter: alpha
+    operationsSorter: alpha
+  api-docs:
+    path: /v3/api-docs
