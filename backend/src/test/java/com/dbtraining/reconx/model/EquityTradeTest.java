@@ -12,16 +12,27 @@ class EquityTradeTest {
 
     @Test
     void builder_buildsWhenAllRequiredPresent() {
-        // TODO(TICKET-ADV019): build an EquityTrade via the Builder with all required fields,
-        //                     then assert tradeRef, notional (price*qty) and assetClass = EQUITY.
-        org.junit.jupiter.api.Assertions.fail("TICKET-ADV019 not implemented yet");
+        EquityTrade trade = sampleEquity("EQU-20260603-0001");
+
+        assertThat(trade.tradeRef()).isEqualTo(TradeRef.of("EQU-20260603-0001"));
+        assertThat(trade.assetClass()).isEqualTo(TradeType.AssetClass.EQUITY);
+        assertThat(trade.notional().amount()).isEqualByComparingTo(new BigDecimal("10000"));
+        assertThat(trade.notional().currency().getCurrencyCode()).isEqualTo("EUR");
     }
 
     @Test
     void builder_missingPrice_throws() {
-        // TODO(TICKET-ADV019): omit .price(...) on the Builder and assert build() throws
-        //                     NullPointerException whose message mentions "price".
-        org.junit.jupiter.api.Assertions.fail("TICKET-ADV019 not implemented yet");
+        EquityTrade.Builder builder = EquityTrade.builder()
+                .tradeRef(TradeRef.of("EQU-20260603-0001"))
+                .instrumentSymbol("SAP.DE")
+                .quantity(new BigDecimal("100"))
+                .currency("EUR").side(Side.BUY)
+                .tradeDate(LocalDate.of(2026, 6, 3))
+                .counterpartyId(1L);
+
+        assertThatThrownBy(builder::build)
+                .isInstanceOf(NullPointerException.class)
+                .hasMessageContaining("price");
     }
 
     @Test
