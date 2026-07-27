@@ -15,7 +15,7 @@ import java.util.Objects;
  *          Modelling them on the trade is the simplest path for the demo.
  * ============================================================================
  */
-public final class BondTrade implements TradeType {
+public final class BondTrade extends Trade implements TradeType {
 
     private final TradeRef tradeRef;
     private final String isin;
@@ -28,6 +28,7 @@ public final class BondTrade implements TradeType {
     private final long counterpartyId;
 
     private BondTrade(Builder b) {
+        super(b.tradeRef, new Money(b.faceValue, b.currency), b.tradeDate);
         this.tradeRef       = b.tradeRef;
         this.isin           = b.isin;
         this.faceValue      = b.faceValue;
@@ -59,16 +60,17 @@ public final class BondTrade implements TradeType {
     public long counterpartyId()      { return counterpartyId; }
 
     @Override public boolean equals(Object o) {
-        return (o instanceof BondTrade other) && tradeRef.equals(other.tradeRef);
+        // TODO(TICKET-ADV028): pattern-match on BondTrade and compare tradeRef.
+        throw new UnsupportedOperationException("TICKET-ADV028");
     }
     @Override public int hashCode() {
-        return tradeRef.hashCode();
+        // TODO(TICKET-ADV028): hash from tradeRef.
+        throw new UnsupportedOperationException("TICKET-ADV028");
     }
 
     @Override public String toString() {
-        return "BondTrade[ref=%s, isin=%s, face=%s %s, coupon=%s, maturity=%s, side=%s]"
-                .formatted(tradeRef, isin, faceValue, currency.getCurrencyCode(),
-                        couponRate, maturityDate, side);
+        // TODO(TICKET-ADV030): "BondTrade[ref=..., isin=..., face=... CCY, coupon=..., maturity=..., side=...]"
+        throw new UnsupportedOperationException("TICKET-ADV030");
     }
 
     public static final class Builder {

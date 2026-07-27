@@ -23,7 +23,7 @@ import java.util.Objects;
  * TICKET-ADV028 — equals/hashCode from tradeRef (Object methods on a regular class)
  * TICKET-ADV030 — toString() omits PII, prints reference/symbol/qty/price/side
  */
-public final class EquityTrade implements TradeType {
+public final class EquityTrade extends Trade implements TradeType {
 
     private final TradeRef tradeRef;
     private final String instrumentSymbol;
@@ -35,6 +35,7 @@ public final class EquityTrade implements TradeType {
     private final long counterpartyId;
 
     private EquityTrade(Builder b) {
+        super(b.tradeRef, new Money(b.quantity.multiply(b.price), b.currency), b.tradeDate);
         this.tradeRef         = b.tradeRef;
         this.instrumentSymbol = b.instrumentSymbol;
         this.quantity         = b.quantity;
@@ -66,18 +67,20 @@ public final class EquityTrade implements TradeType {
     /** equals: two EquityTrades are equal iff their tradeRef is equal. */
     @Override
     public boolean equals(Object o) {
-        return (o instanceof EquityTrade other) && tradeRef.equals(other.tradeRef);
+        // TODO(TICKET-ADV028): pattern-match on EquityTrade and compare tradeRef.
+        throw new UnsupportedOperationException("TICKET-ADV028");
     }
 
     @Override public int hashCode() {
-        return tradeRef.hashCode();
+        // TODO(TICKET-ADV028): hash from tradeRef so it pairs with equals().
+        throw new UnsupportedOperationException("TICKET-ADV028");
     }
 
     @Override
     public String toString() {
-        return "EquityTrade[ref=%s, symbol=%s, qty=%s, price=%s %s, side=%s]"
-                .formatted(tradeRef, instrumentSymbol, quantity, price,
-                        currency.getCurrencyCode(), side);
+        // TODO(TICKET-ADV030): "EquityTrade[ref=..., symbol=..., qty=..., price=... CCY, side=...]"
+        //                     — must NOT leak counterparty PII.
+        throw new UnsupportedOperationException("TICKET-ADV030");
     }
 
     /** Fluent builder. Required fields validated in {@link #build()}. */
