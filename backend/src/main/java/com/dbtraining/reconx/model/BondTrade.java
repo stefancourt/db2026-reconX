@@ -15,7 +15,7 @@ import java.util.Objects;
  *          Modelling them on the trade is the simplest path for the demo.
  * ============================================================================
  */
-public final class BondTrade implements TradeType {
+public final class BondTrade extends Trade implements TradeType {
 
     private final TradeRef tradeRef;
     private final String isin;
@@ -28,6 +28,7 @@ public final class BondTrade implements TradeType {
     private final long counterpartyId;
 
     private BondTrade(Builder b) {
+        super(b.tradeRef, new Money(b.faceValue, b.currency), b.tradeDate);
         this.tradeRef       = b.tradeRef;
         this.isin           = b.isin;
         this.faceValue      = b.faceValue;

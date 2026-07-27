@@ -14,7 +14,7 @@ import java.util.Objects;
  *          trade's currency (simplified — real derivatives use delta-adjusted).
  * ============================================================================
  */
-public final class DerivativeTrade implements TradeType {
+public final class DerivativeTrade extends Trade implements TradeType {
 
     public enum OptionType { CALL, PUT }
 
@@ -30,6 +30,7 @@ public final class DerivativeTrade implements TradeType {
     private final long counterpartyId;
 
     private DerivativeTrade(Builder b) {
+        super(b.tradeRef, new Money(b.strike.multiply(b.quantity), b.currency), b.tradeDate);
         this.tradeRef       = b.tradeRef;
         this.underlying     = b.underlying;
         this.strike         = b.strike;
