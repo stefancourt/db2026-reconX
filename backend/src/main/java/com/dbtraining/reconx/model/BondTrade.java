@@ -92,6 +92,16 @@ public final class BondTrade extends Trade implements TradeType {
         public Builder tradeDate(LocalDate v)      { this.tradeDate = v; return this; }
         public Builder counterpartyId(long v)      { this.counterpartyId = v; return this; }
 
+        /**
+         * Builds a validated, immutable {@link BondTrade}.
+         *
+         * <p>Required fields are null-checked first; maturity date ordering is
+         * enforced before the object is constructed.
+         *
+         * @return a fully-constructed {@code BondTrade} — never {@code null}, all invariants hold
+         * @throws NullPointerException  if any required field is not set
+         * @throws IllegalStateException if {@code maturityDate} is before {@code tradeDate}
+         */
         public BondTrade build() {
             Objects.requireNonNull(tradeRef,     "tradeRef");
             Objects.requireNonNull(isin,         "isin");

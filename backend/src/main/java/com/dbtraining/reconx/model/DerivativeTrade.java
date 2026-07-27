@@ -99,6 +99,17 @@ public final class DerivativeTrade extends Trade implements TradeType {
         public Builder tradeDate(LocalDate v)      { this.tradeDate = v; return this; }
         public Builder counterpartyId(long v)      { this.counterpartyId = v; return this; }
 
+        /**
+         * Builds a validated, immutable {@link DerivativeTrade}.
+         *
+         * <p>Required fields are null-checked first; strike/quantity positivity and
+         * expiry ordering are enforced before the object is constructed.
+         *
+         * @return a fully-constructed {@code DerivativeTrade} — never {@code null}, all invariants hold
+         * @throws NullPointerException  if any required field is not set
+         * @throws IllegalStateException if {@code strike} or {@code quantity} is not positive,
+         *                               or {@code expiry} is before {@code tradeDate}
+         */
         public DerivativeTrade build() {
             Objects.requireNonNull(tradeRef,   "tradeRef");
             Objects.requireNonNull(underlying, "underlying");

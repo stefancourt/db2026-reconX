@@ -104,6 +104,17 @@ public final class EquityTrade extends Trade implements TradeType {
         public Builder tradeDate(LocalDate v)         { this.tradeDate = v;       return this; }
         public Builder counterpartyId(long v)         { this.counterpartyId = v;  return this; }
 
+        /**
+         * Builds a validated, immutable {@link EquityTrade}.
+         *
+         * <p>All required fields are null-checked first; invariants (positive quantity
+         * and price) are enforced before the object is constructed.
+         *
+         * @return a fully-constructed {@code EquityTrade} — never {@code null}, all invariants hold
+         * @throws NullPointerException  if {@code tradeRef}, {@code instrumentSymbol}, {@code quantity},
+         *                               {@code price}, {@code currency}, {@code side}, or {@code tradeDate} is not set
+         * @throws IllegalStateException if {@code quantity} or {@code price} is not strictly positive
+         */
         public EquityTrade build() {
             Objects.requireNonNull(tradeRef,         "tradeRef");
             Objects.requireNonNull(instrumentSymbol, "instrumentSymbol");

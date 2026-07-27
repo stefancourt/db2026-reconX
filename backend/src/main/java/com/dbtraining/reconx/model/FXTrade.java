@@ -93,6 +93,16 @@ public final class FXTrade extends Trade implements TradeType {
         public Builder tradeDate(LocalDate v)      { this.tradeDate = v; return this; }
         public Builder counterpartyId(long v)      { this.counterpartyId = v; return this; }
 
+        /**
+         * Builds a validated, immutable {@link FXTrade}.
+         *
+         * <p>Required fields are null-checked first; currency pair and rate invariants
+         * are enforced before the object is constructed.
+         *
+         * @return a fully-constructed {@code FXTrade} — never {@code null}, all invariants hold
+         * @throws NullPointerException  if any required field is not set
+         * @throws IllegalStateException if {@code ccy1} equals {@code ccy2}, or {@code fxRate} is not positive
+         */
         public FXTrade build() {
             Objects.requireNonNull(tradeRef,     "tradeRef");
             Objects.requireNonNull(ccy1,         "ccy1");

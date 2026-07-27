@@ -29,6 +29,11 @@ public record TradeRef(String value) {
         }
     }
 
+    /**
+     * @param value trade reference string in AAA-YYYYMMDD-NNNN format
+     * @return a validated {@code TradeRef}
+     * @throws IllegalArgumentException if the format is invalid
+     */
     public static TradeRef of(String value) {
         return new TradeRef(value);
     }

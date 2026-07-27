@@ -31,15 +31,31 @@ public record Money(BigDecimal amount, Currency currency) {
         }
     }
 
+    /**
+     * @param amount       decimal string, e.g. {@code "100.00"}
+     * @param currencyCode ISO 4217 currency code, e.g. {@code "USD"}
+     * @return a new {@code Money} instance
+     */
     public static Money of(String amount, String currencyCode) {
         return new Money(new BigDecimal(amount), Currency.getInstance(currencyCode));
     }
 
+    /**
+     * @param amount       non-negative amount
+     * @param currencyCode ISO 4217 currency code, e.g. {@code "USD"}
+     * @return a new {@code Money} instance
+     */
     public static Money of(BigDecimal amount, String currencyCode) {
         return new Money(amount, Currency.getInstance(currencyCode));
     }
 
-    /** Add another Money of the same currency. Throws on currency mismatch. */
+    /**
+     * Adds another {@code Money} of the same currency.
+     *
+     * @param other the amount to add, must not be {@code null}
+     * @return a new {@code Money} with the combined amount
+     * @throws IllegalArgumentException if currencies differ
+     */
     public Money plus(Money other) {
         if (!this.currency.equals(other.currency)) {
             throw new IllegalArgumentException(
@@ -48,6 +64,10 @@ public record Money(BigDecimal amount, Currency currency) {
         return new Money(this.amount.add(other.amount), this.currency);
     }
 
+    /**
+     * @param multiplier the factor to multiply by
+     * @return a new {@code Money} with the scaled amount, same currency
+     */
     public Money times(BigDecimal multiplier) {
         return new Money(this.amount.multiply(multiplier), this.currency);
     }
