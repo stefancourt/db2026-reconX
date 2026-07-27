@@ -61,11 +61,13 @@ public class ReconciliationEngine {
             Map<Long, List<TradeType>> internalByCp,
             Map<Long, List<TradeType>> externalByCp,
             ReconciliationRule rule) {
-        // TODO(TICKET-ADV037): for each counterparty key in internalByCp launch a
-        //   CompletableFuture.supplyAsync(() -> reconcile(...)). Combine via
-        //   CompletableFuture.allOf(...).thenApply(v -> futures.stream()
-        //       .flatMap(f -> f.join().stream()).toList()).
-        throw new UnsupportedOperationException("TICKET-ADV037");
+        List<CompletableFuture<List<ReconResult>>> futures = internalByCp.entrySet().stream()
+                .map(e -> CompletableFuture.supplyAsync(() ->
+                        reconcile(e.getValue(), externalByCp.getOrDefault(e.getKey(), List.of()), rule)))
+                .toList();
+                                                    
+        return CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new))
+                .thenApply(v -> futures.stream().flatMap(f -> f.join().stream()).toList());
     }
 
     private ReconResult matchOne(TradeType internal, TradeType external, ReconciliationRule rule) {
