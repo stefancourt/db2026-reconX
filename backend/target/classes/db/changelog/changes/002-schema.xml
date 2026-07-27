@@ -20,6 +20,11 @@
 
     <!-- ADV006 — counterparties -->
     <changeSet id="002-create-counterparties" author="trainer">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="counterparties"/>
+            </not>
+        </preConditions>
         <createTable tableName="counterparties">
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true"/>
@@ -36,6 +41,11 @@
 
     <!-- ADV006 — instruments -->
     <changeSet id="002-create-instruments" author="trainer">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="instruments"/>
+            </not>
+        </preConditions>
         <createTable tableName="instruments">
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true"/>
@@ -53,6 +63,11 @@
 
     <!-- ADV006 — trades (non-partitioned base; 004 attaches partitions on Postgres) -->
     <changeSet id="002-create-trades" author="trainer">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="trades"/>
+            </not>
+        </preConditions>
         <createTable tableName="trades">
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true"/>
@@ -89,6 +104,11 @@
 
     <!-- ADV006 — settlements -->
     <changeSet id="002-create-settlements" author="trainer">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="settlements"/>
+            </not>
+        </preConditions>
         <createTable tableName="settlements">
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true"/>
@@ -104,6 +124,15 @@
         <rollback>
             <dropTable tableName="settlements"/>
         </rollback>
+    </changeSet>
+
+    <changeSet id="002-tag-release-1-0" author="trainer">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM databasechangelog WHERE tag = 'release-1.0'
+            </sqlCheck>
+        </preConditions>
+        <tagDatabase tag="release-1.0"/>
     </changeSet>
 
 </databaseChangeLog>

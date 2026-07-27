@@ -26,6 +26,7 @@ com\dbtraining\reconx\model\BondTrade$Builder.class
 com\dbtraining\reconx\controller\TradeController.class
 com\dbtraining\reconx\model\EquityTrade.class
 com\dbtraining\reconx\model\TradeType.class
+com\dbtraining\reconx\observability\KafkaHealthIndicator.class
 com\dbtraining\reconx\repository\entity\AppUser.class
 com\dbtraining\reconx\repository\TradeRepository.class
 com\dbtraining\reconx\service\InstrumentService.class
@@ -47,9 +48,11 @@ com\dbtraining\reconx\dto\TradeMapper.class
 com\dbtraining\reconx\model\DerivativeTrade$OptionType.class
 com\dbtraining\reconx\dto\PagedResponse.class
 com\dbtraining\reconx\model\ReconciliationRule.class
+com\dbtraining\reconx\model\Trade.class
 com\dbtraining\reconx\dto\TradeMapperImpl.class
 com\dbtraining\reconx\dto\LoginResponse.class
 com\dbtraining\reconx\dto\TradeEvent.class
+com\dbtraining\reconx\observability\MdcFilter.class
 com\dbtraining\reconx\config\OpenApiConfig.class
 com\dbtraining\reconx\exception\TradeNotFoundException.class
 com\dbtraining\reconx\kafka\AlertConsumer.class

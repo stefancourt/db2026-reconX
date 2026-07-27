@@ -8,6 +8,7 @@ C:\Users\anaca\project\db2026-reconX\backend\src\main\java\com\dbtraining\reconx
 C:\Users\anaca\project\db2026-reconX\backend\src\main\java\com\dbtraining\reconx\dto\PagedResponse.java
 C:\Users\anaca\project\db2026-reconX\backend\src\main\java\com\dbtraining\reconx\dto\ReconResult.java
 C:\Users\anaca\project\db2026-reconX\backend\src\main\java\com\dbtraining\reconx\dto\ReconRunRequest.java
+C:\Users\anaca\project\db2026-reconX\backend\src\main\java\com\dbtraining\reconx\dto\ReconSummary.java
 C:\Users\anaca\project\db2026-reconX\backend\src\main\java\com\dbtraining\reconx\dto\TradeEvent.java
 C:\Users\anaca\project\db2026-reconX\backend\src\main\java\com\dbtraining\reconx\dto\TradeMapper.java
 C:\Users\anaca\project\db2026-reconX\backend\src\main\java\com\dbtraining\reconx\dto\TradeRequest.java
@@ -58,5 +59,6 @@ C:\Users\anaca\project\db2026-reconX\backend\src\main\java\com\dbtraining\reconx
 C:\Users\anaca\project\db2026-reconX\backend\src\main\java\com\dbtraining\reconx\security\SecurityConfig.java
 C:\Users\anaca\project\db2026-reconX\backend\src\main\java\com\dbtraining\reconx\service\InstrumentService.java
 C:\Users\anaca\project\db2026-reconX\backend\src\main\java\com\dbtraining\reconx\service\ReconciliationEngine.java
+C:\Users\anaca\project\db2026-reconX\backend\src\main\java\com\dbtraining\reconx\service\ReconSummaryCollector.java
 C:\Users\anaca\project\db2026-reconX\backend\src\main\java\com\dbtraining\reconx\service\TradeAnalyticsService.java
 C:\Users\anaca\project\db2026-reconX\backend\src\main\java\com\dbtraining\reconx\service\TradeService.java

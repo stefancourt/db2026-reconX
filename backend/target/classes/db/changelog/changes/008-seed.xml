@@ -17,7 +17,13 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
                             http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
 
-    <changeSet id="008-seed-counterparties" author="trainer">
+    <changeSet id="008-seed-counterparties" author="trainer" context="dev,test">
+        <preConditions onFail="MARK_RAN">
+            <and>
+                <tableExists tableName="counterparties"/>
+                <sqlCheck expectedResult="0">SELECT COUNT(*) FROM counterparties</sqlCheck>
+            </and>
+        </preConditions>
         <loadData file="data/counterparties.csv" tableName="counterparties"
                   separator="," relativeToChangelogFile="true">
             <column name="id" type="NUMERIC"/>
@@ -30,7 +36,13 @@
         </rollback>
     </changeSet>
 
-    <changeSet id="008-seed-instruments" author="trainer">
+    <changeSet id="008-seed-instruments" author="trainer" context="dev,test">
+        <preConditions onFail="MARK_RAN">
+            <and>
+                <tableExists tableName="instruments"/>
+                <sqlCheck expectedResult="0">SELECT COUNT(*) FROM instruments</sqlCheck>
+            </and>
+        </preConditions>
         <loadData file="data/instruments.csv" tableName="instruments"
                   separator="," relativeToChangelogFile="true">
             <column name="id" type="NUMERIC"/>
@@ -45,7 +57,16 @@
         </rollback>
     </changeSet>
 
-    <changeSet id="008-seed-users" author="trainer">
+    <changeSet id="008-seed-users" author="trainer" context="dev,test">
+        <preConditions onFail="MARK_RAN">
+            <and>
+                <tableExists tableName="users"/>
+                <sqlCheck expectedResult="0">
+                    SELECT COUNT(*) FROM users
+                    WHERE email IN ('admin@db.com', 'trader@db.com', 'viewer@db.com', 'recon@db.com')
+                </sqlCheck>
+            </and>
+        </preConditions>
         <!-- Real BCrypt hashes (cost=10) for admin123 / trader123 / viewer123 / recon123.
              Generated via: htpasswd -bnBC 10 "" <pw> | tr -d ':\n'
              Spring Security's BCryptPasswordEncoder accepts both $2a$ and $2y$ prefixes. -->

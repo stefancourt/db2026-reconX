@@ -1,6 +1,7 @@
 package com.dbtraining.reconx.service;
 
 import com.dbtraining.reconx.dto.ReconResult;
+import com.dbtraining.reconx.dto.ReconSummary;
 import com.dbtraining.reconx.model.*;
 import org.junit.jupiter.api.Test;
 
@@ -56,6 +57,27 @@ class ReconciliationEngineTest {
     void testReconcile_emptyInternal_returnsEmpty() {
         List<ReconResult> results = engine.reconcile(List.of(), List.of(), ReconciliationRule.EXACT);
         assertThat(results).isEmpty();
+    }
+
+
+  @Test
+    void testReconcile_allMismatched_summaryShowsZeroMatched() {
+        List<TradeType> internals = List.of(
+                equity("AAA-20260727-0001", "100.00", "10"),
+                equity("AAA-20260727-0002", "100.00", "10"),
+                equity("AAA-20260727-0003", "100.00", "10"));
+        List<TradeType> externals = List.of(
+                // These trades have the same tradeRef but different price and quantity, so they will not match under the EXACT rule.
+                equity("AAA-20260727-0001", "200.00", "10"),
+                equity("AAA-20260727-0002", "200.00", "10"),
+                equity("AAA-20260727-0003", "200.00", "10"));
+
+        List<ReconResult> out = engine.reconcile(internals, externals, ReconciliationRule.EXACT);
+        ReconSummary summary = out.stream().collect(new ReconSummaryCollector());
+
+        assertThat(summary.total()).isEqualTo(3);
+        assertThat(summary.matched()).isEqualTo(0);
+        assertThat(summary.broken()).isEqualTo(3);
     }
 
     private EquityTrade equity(String ref, String price, String qty) {

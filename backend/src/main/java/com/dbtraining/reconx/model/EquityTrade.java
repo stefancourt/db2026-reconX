@@ -67,20 +67,27 @@ public final class EquityTrade extends Trade implements TradeType {
     /** equals: two EquityTrades are equal iff their tradeRef is equal. */
     @Override
     public boolean equals(Object o) {
-        // TODO(TICKET-ADV028): pattern-match on EquityTrade and compare tradeRef.
-        throw new UnsupportedOperationException("TICKET-ADV028");
-    }
-
-    @Override public int hashCode() {
-        // TODO(TICKET-ADV028): hash from tradeRef so it pairs with equals().
-        throw new UnsupportedOperationException("TICKET-ADV028");
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        EquityTrade that = (EquityTrade) o;
+        return tradeRef != null ? tradeRef.equals(that.tradeRef()) : that.tradeRef() == null;
     }
 
     @Override
+    public int hashCode() {
+        return tradeRef != null ? tradeRef.hashCode() : 0;
+    }
+
+   @Override
     public String toString() {
-        // TODO(TICKET-ADV030): "EquityTrade[ref=..., symbol=..., qty=..., price=... CCY, side=...]"
-        //                     — must NOT leak counterparty PII.
-        throw new UnsupportedOperationException("TICKET-ADV030");
+        String refValue = (tradeRef != null) ? tradeRef.value() : "null";
+        return String.format("EquityTrade[ref=%s, symbol=%s, qty=%s, price=%s %s, side=%s]",
+                refValue,
+                instrumentSymbol,
+                quantity,
+                price,
+                currency,
+                side);
     }
 
     /** Fluent builder. Required fields validated in {@link #build()}. */
