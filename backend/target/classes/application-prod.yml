@@ -1,0 +1,36 @@
+# =============================================================================
+# TICKET-ADV049 — prod profile: PostgreSQL, secrets only from env
+#
+# Nothing here may be a literal credential. Every secret comes from env vars
+# resolved at container start (see docker-compose.yml + GitHub Actions secrets).
+# =============================================================================
+spring:
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+    hikari:
+      maximum-pool-size: 30
+      connection-timeout: 3000
+      leak-detection-threshold: 30000
+  jpa:
+    properties:
+      hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
+      hibernate.jdbc.batch_size: 100
+
+reconx:
+  security:
+    jwt:
+      secret: ${JWT_SECRET}
+      expiration-minutes: ${JWT_EXP_MIN:30}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+
+logging:
+  level:
+    com.dbtraining.reconx: INFO
+    root: WARN

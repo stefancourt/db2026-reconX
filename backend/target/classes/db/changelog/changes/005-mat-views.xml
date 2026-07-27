@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ ============================================================================
+ TICKET-ADV008 — Materialised view mv_daily_recon_summary
+ WHAT:    Daily aggregate of matched/break counts + total notional, used by
+          the dashboard's "today at a glance" cards.
+ HOW:     REFRESH MATERIALIZED VIEW CONCURRENTLY (requires unique index).
+          Scheduled refresh is done by a cron job (not shown — Day 6 task).
+ WHY:     Computing daily stats over a partitioned 50M-row table at every
+          dashboard load is 600ms+; the matview is 5ms.
+ OBSERVE: SELECT * FROM mv_daily_recon_summary returns one row per day.
+ ============================================================================
+-->
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                            http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <changeSet id="005-mv-daily-recon-summary" author="trainer">
+        <preConditions onFail="MARK_RAN">
+            <dbms type="postgresql"/>
+        </preConditions>
+        <sql splitStatements="false"><![CDATA[
+            CREATE MATERIALIZED VIEW mv_daily_recon_summary AS
+            SELECT
+                trade_date,
+                COUNT(*)                                          AS total_trades,
+                COUNT(*) FILTER (WHERE status = 'MATCHED')        AS matched_trades,
+                COUNT(*) FILTER (WHERE status IN ('UNMATCHED','DISPUTED')) AS break_trades,
+                COALESCE(SUM(quantity * price), 0)                AS total_notional
+            FROM trades
+            WHERE deleted_at IS NULL
+            GROUP BY trade_date;
+
+            CREATE UNIQUE INDEX uq_mv_daily_recon_summary_trade_date
+                ON mv_daily_recon_summary (trade_date);
+        ]]></sql>
+        <rollback>
+            <sql>DROP MATERIALIZED VIEW IF EXISTS mv_daily_recon_summary;</sql>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

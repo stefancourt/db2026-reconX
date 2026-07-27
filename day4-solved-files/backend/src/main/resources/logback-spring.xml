@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ============================================================================
+  TICKET-ADV061 — Structured logging with per-profile encoders
+
+  dev      : plain console pattern with MDC tokens for eyeball debugging.
+  uat/prod : LogstashEncoder JSON with includeMdc=true so ELK can index
+             correlationId / tradeRef as fields, plus a "service" custom
+             field so multi-service log streams stay distinguishable.
+
+  Paired with observability/MdcFilter which populates the MDC keys.
+  ============================================================================
+-->
+<configuration>
+
+    <springProfile name="dev">
+        <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder>
+                <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %X{correlationId:-} %X{tradeRef:-} %logger{36} - %msg%n</pattern>
+            </encoder>
+        </appender>
+    </springProfile>
+
+    <springProfile name="uat,prod">
+        <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+                <includeMdc>true</includeMdc>
+                <customFields>{"service":"reconx-api"}</customFields>
+            </encoder>
+        </appender>
+    </springProfile>
+
+    <root level="INFO">
+        <appender-ref ref="STDOUT"/>
+    </root>
+
+</configuration>
