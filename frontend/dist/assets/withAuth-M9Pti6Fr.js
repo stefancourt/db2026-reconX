@@ -1,1 +1,0 @@
-import{u as r,a as n,j as s,N as o}from"./index-CxyqBC3g.js";function c(t){function a(e){const{user:u}=r(),i=n();return u?s.jsx(t,{...e}):s.jsx(o,{to:"/login",replace:!0,state:{from:i.pathname}})}return a.displayName=`withAuth(${t.displayName||t.name||"Component"})`,a}export{c as w};
