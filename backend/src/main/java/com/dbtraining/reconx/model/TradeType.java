@@ -53,5 +53,8 @@ public sealed interface TradeType
         return NATURAL.compare(this, other);
     }
 
+    @Override
+    public abstract String toString();
+
     enum AssetClass { EQUITY, FX, BOND, DERIVATIVE }
 }
