@@ -17,6 +17,7 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+
 # ==== IDEs / editors ====
 .idea/
 .vscode/
@@ -33,3 +34,5 @@ desktop.ini
 .env
 .env.local
 *.local
+
+tickets.md

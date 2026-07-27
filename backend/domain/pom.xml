@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ TICKET-ADV048 — domain: the business model and the JPA entities.
+
+ Two package families live here:
+   model/  — the sealed TradeType hierarchy, Money, TradeRef, ReconciliationRule.
+             Pure Java, no Spring, no database.
+   domain/ — the @Entity classes mapped to the Liquibase schema (ADV050-ADV052).
+
+ Depends on no other project module. Everything above it depends on this.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.dbtraining</groupId>
+        <artifactId>reconx</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>reconx-domain</artifactId>
+    <packaging>jar</packaging>
+
+    <dependencies>
+        <!-- jakarta.persistence annotations + the Spring Data auditing listener. -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+        <!-- ADV052 — @Audited on the Trade entity. -->
+        <dependency>
+            <groupId>org.hibernate.orm</groupId>
+            <artifactId>hibernate-envers</artifactId>
+        </dependency>
+        <!-- ADV009 / ADV051 — JSONB mapping for Instrument.metadata. -->
+        <dependency>
+            <groupId>io.hypersistence</groupId>
+            <artifactId>hypersistence-utils-hibernate-63</artifactId>
+        </dependency>
+    </dependencies>
+</project>

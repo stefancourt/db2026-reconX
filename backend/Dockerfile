@@ -9,11 +9,26 @@ FROM eclipse-temurin:25-jdk AS build
 WORKDIR /workspace
 COPY pom.xml mvnw ./
 COPY .mvn .mvn
+# ADV048 — copy every module POM before any source so `dependency:go-offline`
+# resolves the whole reactor into a cached layer that survives source edits.
+COPY common/pom.xml     common/
+COPY domain/pom.xml     domain/
+COPY repository/pom.xml repository/
+COPY service/pom.xml    service/
+COPY api/pom.xml        api/
+
 RUN sed -i 's/\r$//' mvnw && chmod +x mvnw
 RUN ./mvnw -q -B dependency:go-offline
-COPY src src
+
+COPY common/src     common/src
+COPY domain/src     domain/src
+COPY repository/src repository/src
+COPY service/src    service/src
+COPY api/src        api/src
+
+# Only `api` carries the Spring Boot repackage goal, so it holds the runnable jar.
 RUN ./mvnw -q -B -DskipTests package && \
-    mv target/reconx-*.jar app.jar
+    mv api/target/reconx-api-*.jar app.jar
 
 FROM eclipse-temurin:25-jre-alpine
 RUN addgroup -S reconx && adduser -S reconx -G reconx
