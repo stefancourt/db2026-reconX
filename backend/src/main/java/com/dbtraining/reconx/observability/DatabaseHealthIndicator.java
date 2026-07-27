@@ -5,6 +5,8 @@ import org.springframework.boot.actuate.health.Health;
 import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.Statement;
 
 /**
  * ============================================================================
@@ -13,24 +15,14 @@ import javax.sql.DataSource;
  * WHAT:    Custom actuator HealthIndicator that runs a fast `SELECT 1` with
  *          a 2-second timeout and reports latencyMs as a detail.
  * HOW:     Extends AbstractHealthIndicator; Spring picks it up by bean name
- *          and exposes it under /actuator/health/database.
+ *          ("database") and exposes it under /actuator/health/database. Any
+ *          exception thrown out of doHealthCheck is converted to DOWN by the
+ *          superclass, with the exception class attached as a detail.
  * WHY:     The default DataSource health indicator works, but a custom one
  *          gives us a controllable timeout AND visible latency for SRE
  *          dashboards.
  * OBSERVE: GET /api/actuator/health/database -> `{"status":"UP",
  *          "details":{"latencyMs": <number>}}`.
- * ============================================================================
- *
- *  TODO(TICKET-ADV059):
- *    long start = System.nanoTime();
- *    try (Connection c = ds.getConnection(); Statement s = c.createStatement()) {
- *        s.setQueryTimeout(2);
- *        s.execute("SELECT 1");
- *        builder.up().withDetail("latencyMs", (System.nanoTime() - start) / 1_000_000);
- *    }
- *
- *  HINT: Throw any exception out of this method — AbstractHealthIndicator
- *        converts it to DOWN with the exception class as a detail.
  * ============================================================================
  */
 @Component("database")
@@ -42,7 +34,11 @@ public class DatabaseHealthIndicator extends AbstractHealthIndicator {
 
     @Override
     protected void doHealthCheck(Health.Builder builder) throws Exception {
-        // TODO(TICKET-ADV059): run `SELECT 1` with a 2s timeout and record latencyMs.
-        builder.up();
+        long start = System.nanoTime();
+        try (Connection c = ds.getConnection(); Statement s = c.createStatement()) {
+            s.setQueryTimeout(2);
+            s.execute("SELECT 1");
+            builder.up().withDetail("latencyMs", (System.nanoTime() - start) / 1_000_000);
+        }
     }
 }

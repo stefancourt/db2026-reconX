@@ -17,11 +17,6 @@
                             http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
 
     <changeSet id="006-create-audit-log" author="trainer">
-        <preConditions onFail="MARK_RAN">
-            <not>
-                <tableExists tableName="audit_log"/>
-            </not>
-        </preConditions>
         <createTable tableName="audit_log">
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true"/>
@@ -31,8 +26,13 @@
             <column name="event_type" type="VARCHAR(30)"><constraints nullable="false"/></column>
             <column name="event_timestamp" type="TIMESTAMP"><constraints nullable="false"/></column>
             <column name="actor" type="VARCHAR(100)"/>
-            <column name="before_state" type="CLOB"/>
-            <column name="after_state" type="CLOB"/>
+            <!-- Deliberately NOT CLOB/TEXT here: on H2 (PostgreSQL mode) both
+                 alias to CHARACTER LARGE OBJECT, which fails Hibernate schema
+                 validation against the entity's columnDefinition="TEXT"
+                 (Hibernate maps String → Types.VARCHAR). Using an unbounded
+                 VARCHAR keeps H2 as VARCHAR and Postgres as text. -->
+            <column name="before_state" type="VARCHAR(1000000)"/>
+            <column name="after_state" type="VARCHAR(1000000)"/>
         </createTable>
         <createIndex tableName="audit_log" indexName="idx_audit_log_trade_ref">
             <column name="trade_ref"/>
@@ -42,12 +42,12 @@
         </rollback>
     </changeSet>
 
+    <!-- validCheckSum ANY: this changeset used to also inline the FK to
+         trades(id); ADV007 split the FK into its own changeset below so it
+         can be skipped on Postgres (partitioned parent). Persistent DBs
+         that ran the old version keep their row in databasechangelog. -->
     <changeSet id="006-create-recon-breaks" author="trainer">
-        <preConditions onFail="MARK_RAN">
-            <not>
-                <tableExists tableName="recon_breaks"/>
-            </not>
-        </preConditions>
+        <validCheckSum>ANY</validCheckSum>
         <createTable tableName="recon_breaks">
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true"/>
@@ -59,20 +59,36 @@
             <column name="resolved_at" type="TIMESTAMP"/>
             <column name="resolution_note" type="VARCHAR(500)"/>
         </createTable>
-        <addForeignKeyConstraint baseTableName="recon_breaks" baseColumnNames="trade_id"
-                                 constraintName="fk_recon_breaks_trade"
-                                 referencedTableName="trades" referencedColumnNames="id"/>
         <rollback>
             <dropTable tableName="recon_breaks"/>
         </rollback>
     </changeSet>
 
-    <changeSet id="006-create-recon-jobs" author="trainer">
+    <!-- FK to trades(id) only when trades is NOT partitioned. On Postgres,
+         ADV007 recreates trades as PARTITION BY RANGE (trade_date), and FKs
+         into a partitioned parent must reference a uniquely-indexed column
+         set — id alone is not unique on the parent. Recon_breaks stays FK-less
+         on Postgres; the schema-evolution follow-up in the trainer guide adds
+         trade_date and references (id, trade_date).
+
+         The foreignKeyConstraintExists precondition MARK_RANs this on
+         databases that already had the FK created by the pre-split version
+         of 006-create-recon-breaks. -->
+    <changeSet id="006-add-recon-breaks-fk-nonpartitioned" author="trainer">
         <preConditions onFail="MARK_RAN">
-            <not>
-                <tableExists tableName="recon_jobs"/>
-            </not>
+            <not><dbms type="postgresql"/></not>
+            <not><foreignKeyConstraintExists foreignKeyName="fk_recon_breaks_trade"/></not>
         </preConditions>
+        <addForeignKeyConstraint baseTableName="recon_breaks" baseColumnNames="trade_id"
+                                 constraintName="fk_recon_breaks_trade"
+                                 referencedTableName="trades" referencedColumnNames="id"/>
+        <rollback>
+            <dropForeignKeyConstraint baseTableName="recon_breaks"
+                                      constraintName="fk_recon_breaks_trade"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="006-create-recon-jobs" author="trainer">
         <createTable tableName="recon_jobs">
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true"/>
