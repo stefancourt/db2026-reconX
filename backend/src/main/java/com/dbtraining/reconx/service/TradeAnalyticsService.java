@@ -2,10 +2,10 @@ package com.dbtraining.reconx.service;
 
 import com.dbtraining.reconx.model.EquityTrade;
 import com.dbtraining.reconx.model.TradeType;
+import com.dbtraining.reconx.model.Side;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -34,24 +34,32 @@ public class TradeAnalyticsService {
      * EquityTrade has a meaningful price-volume pair.
      */
     public Map<String, BigDecimal> vwapByInstrument(List<EquityTrade> equityTrades) {
-        // TODO(TICKET-ADV035): group by EquityTrade::instrumentSymbol, then for
-        //   each bucket compute SUM(price * qty) / SUM(qty) using BigDecimal
-        //   with RoundingMode.HALF_UP. Return BigDecimal.ZERO when totalQty is 0
-        //   (avoid ArithmeticException on division by zero).
-        throw new UnsupportedOperationException("TICKET-ADV035");
+        return equityTrades.stream()
+                .filter(t -> t != null)
+                .collect(Collectors.groupingBy(
+                        EquityTrade::instrumentSymbol,
+                        VwapCollector.toVwap()));
+    }
+
+    /** TICKET-ADV035 — VWAP across every supplied trade, ignoring the symbol. */
+    public BigDecimal vwap(List<EquityTrade> equityTrades) {
+        return equityTrades.stream()
+                .filter(t -> t != null)
+                .collect(VwapCollector.toVwap());
     }
 
     /** TICKET-ADV036 — P&L per instrument symbol (sign by Side). */
     public Map<String, BigDecimal> pnlByInstrument(List<EquityTrade> equityTrades) {
-        // TODO(TICKET-ADV036): groupingBy(EquityTrade::instrumentSymbol,
-        //   mapping(this::pnl, reducing(BigDecimal.ZERO, BigDecimal::add))).
-        //   Side.SELL contributes positively; Side.BUY contributes negatively.
-        throw new UnsupportedOperationException("TICKET-ADV036");
+        return equityTrades.stream()
+                .filter(t -> t != null)
+                .collect(Collectors.groupingBy(
+                        EquityTrade::instrumentSymbol,
+                        Collectors.mapping(this::pnl, Collectors.reducing(BigDecimal.ZERO, BigDecimal::add))));
     }
 
     private BigDecimal pnl(EquityTrade t) {
-        // TODO(TICKET-ADV036): BigDecimal abs = price * qty; SELL -> abs, BUY -> abs.negate().
-        throw new UnsupportedOperationException("TICKET-ADV036");
+        BigDecimal abs = t.price().multiply(t.quantity());
+        return t.side() == Side.SELL ? abs : abs.negate();
     }
 
     private long counterpartyIdOf(TradeType t) {
