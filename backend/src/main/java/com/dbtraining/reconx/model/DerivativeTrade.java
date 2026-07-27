@@ -63,17 +63,16 @@ public final class DerivativeTrade implements TradeType {
     public long counterpartyId()     { return counterpartyId; }
 
     @Override public boolean equals(Object o) {
-        // TODO(TICKET-ADV028): pattern-match on DerivativeTrade and compare tradeRef.
-        throw new UnsupportedOperationException("TICKET-ADV028");
+        return (o instanceof DerivativeTrade other) && tradeRef.equals(other.tradeRef);
     }
     @Override public int hashCode() {
-        // TODO(TICKET-ADV028): hash from tradeRef.
-        throw new UnsupportedOperationException("TICKET-ADV028");
+        return tradeRef.hashCode();
     }
 
     @Override public String toString() {
-        // TODO(TICKET-ADV030): "DerivativeTrade[ref=..., TYPE UNDERLYING on date, strike=... CCY, qty=..., expiry=..., side=...]"
-        throw new UnsupportedOperationException("TICKET-ADV030");
+        return "DerivativeTrade[ref=%s, %s %s on %s, strike=%s %s, qty=%s, expiry=%s, side=%s]"
+                .formatted(tradeRef, optionType, underlying, tradeDate, strike,
+                        currency.getCurrencyCode(), quantity, expiry, side);
     }
 
     public static final class Builder {
@@ -109,8 +108,6 @@ public final class DerivativeTrade implements TradeType {
             Objects.requireNonNull(tradeDate,  "tradeDate");
             if (strike.signum() <= 0)   throw new IllegalStateException("strike must be > 0");
             if (quantity.signum() <= 0) throw new IllegalStateException("quantity must be > 0");
-            // NOTE: expiry is validated only against tradeDate, NOT LocalDate.now() —
-            //       an already-expired option is a valid historical record for replay.
             if (expiry.isBefore(tradeDate))
                 throw new IllegalStateException("expiry cannot be before tradeDate");
             return new DerivativeTrade(this);
