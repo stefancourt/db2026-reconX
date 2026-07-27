@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ ============================================================================
+ TICKET-ADV006 — Core 8-entity ER model
+ WHAT:    Counterparties, instruments, trades, settlements, recon_breaks,
+          recon_jobs, audit_log, users. trades is partitioned in 004; here it
+          is the non-partitioned base (H2 fallback) — see preconditions.
+ HOW:     Standard <createTable> with constraints inline. Region/asset class/
+          status guarded by CHECK constraints.
+ WHY:     Strong-typed schema = the database catches bad data before it
+          reaches the recon engine.
+ OBSERVE: After boot: \dt on Postgres lists 8 tables (+ databasechangelog).
+ ============================================================================
+-->
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                            http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!-- ADV006 — counterparties -->
+    <changeSet id="002-create-counterparties" author="trainer">
+        <createTable tableName="counterparties">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(100)"><constraints nullable="false"/></column>
+            <column name="lei_code" type="VARCHAR(20)"><constraints nullable="false" unique="true"/></column>
+            <column name="region" type="VARCHAR(10)"><constraints nullable="false"/></column>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+        </createTable>
+        <rollback>
+            <dropTable tableName="counterparties"/>
+        </rollback>
+    </changeSet>
+
+    <!-- ADV006 — instruments -->
+    <changeSet id="002-create-instruments" author="trainer">
+        <createTable tableName="instruments">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="symbol" type="VARCHAR(20)"><constraints nullable="false" unique="true"/></column>
+            <column name="name" type="VARCHAR(200)"><constraints nullable="false"/></column>
+            <column name="asset_class" type="VARCHAR(20)"><constraints nullable="false"/></column>
+            <column name="currency" type="VARCHAR(3)"><constraints nullable="false"/></column>
+            <column name="isin" type="VARCHAR(12)"><constraints unique="true"/></column>
+        </createTable>
+        <rollback>
+            <dropTable tableName="instruments"/>
+        </rollback>
+    </changeSet>
+
+    <!-- ADV006 — trades (non-partitioned base; 004 attaches partitions on Postgres) -->
+    <changeSet id="002-create-trades" author="trainer">
+        <createTable tableName="trades">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="trade_ref" type="VARCHAR(30)"><constraints nullable="false" unique="true"/></column>
+            <column name="instrument_id" type="BIGINT"><constraints nullable="false"/></column>
+            <column name="counterparty_id" type="BIGINT"><constraints nullable="false"/></column>
+            <column name="asset_class" type="VARCHAR(20)"><constraints nullable="false"/></column>
+            <column name="side" type="VARCHAR(4)"><constraints nullable="false"/></column>
+            <column name="quantity" type="NUMERIC(18,4)"><constraints nullable="false"/></column>
+            <column name="price" type="NUMERIC(18,4)"><constraints nullable="false"/></column>
+            <column name="trade_date" type="DATE"><constraints nullable="false"/></column>
+            <column name="status" type="VARCHAR(20)" defaultValue="PENDING"><constraints nullable="false"/></column>
+            <column name="deleted_at" type="TIMESTAMP"/>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="modified_at" type="TIMESTAMP"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="trades" baseColumnNames="instrument_id"
+                                 constraintName="fk_trades_instrument"
+                                 referencedTableName="instruments" referencedColumnNames="id"/>
+        <addForeignKeyConstraint baseTableName="trades" baseColumnNames="counterparty_id"
+                                 constraintName="fk_trades_counterparty"
+                                 referencedTableName="counterparties" referencedColumnNames="id"/>
+        <createIndex tableName="trades" indexName="idx_trades_trade_date">
+            <column name="trade_date"/>
+        </createIndex>
+        <createIndex tableName="trades" indexName="idx_trades_status">
+            <column name="status"/>
+        </createIndex>
+        <rollback>
+            <dropTable tableName="trades"/>
+        </rollback>
+    </changeSet>
+
+    <!-- ADV006 — settlements -->
+    <changeSet id="002-create-settlements" author="trainer">
+        <createTable tableName="settlements">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="trade_id" type="BIGINT"><constraints nullable="false"/></column>
+            <column name="settlement_date" type="DATE"><constraints nullable="false"/></column>
+            <column name="amount" type="NUMERIC(18,4)"><constraints nullable="false"/></column>
+            <column name="status" type="VARCHAR(20)" defaultValue="PENDING"><constraints nullable="false"/></column>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="settlements" baseColumnNames="trade_id"
+                                 constraintName="fk_settlements_trade"
+                                 referencedTableName="trades" referencedColumnNames="id"/>
+        <rollback>
+            <dropTable tableName="settlements"/>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

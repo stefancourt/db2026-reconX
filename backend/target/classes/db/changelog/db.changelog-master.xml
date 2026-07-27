@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ ============================================================================
+ TICKET-ADV012 — Liquibase master changelog
+ WHAT:    Root changelog that includes per-release changelog files in order.
+ HOW:     <include file="..."/> with relativeToChangelogFile="true". Per-release
+          files live under changelog/changes/.
+ WHY:     Splitting per-release keeps PR diffs reviewable and makes selective
+          rollback by tag straightforward (ADV013).
+ OBSERVE: On first boot, Liquibase creates databasechangelog + databasechangeloglock
+          tables, then applies every included changeset in declared order.
+ ============================================================================
+-->
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                            http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <include file="changes/001-init.xml"          relativeToChangelogFile="true"/>
+    <include file="changes/002-schema.xml"        relativeToChangelogFile="true"/>
+    <include file="changes/003-jsonb.xml"         relativeToChangelogFile="true"/>
+    <include file="changes/004-partitioning.xml"  relativeToChangelogFile="true"/>
+    <include file="changes/005-mat-views.xml"     relativeToChangelogFile="true"/>
+    <include file="changes/006-audit-and-recon.xml" relativeToChangelogFile="true"/>
+    <include file="changes/007-users-rbac.xml"    relativeToChangelogFile="true"/>
+    <include file="changes/008-seed.xml"          relativeToChangelogFile="true"/>
+
+</databaseChangeLog>

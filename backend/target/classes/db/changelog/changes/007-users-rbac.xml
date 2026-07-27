@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ ============================================================================
+ TICKET-ADV074 — RBAC: users table + 4 roles
+ WHAT:    users(id, email, password_hash, role, enabled) — minimal schema for
+          JWT auth. Roles: ADMIN, TRADER, VIEWER, RECON_ANALYST.
+ HOW:     password_hash uses BCrypt (60 chars). Role stored as VARCHAR
+          (UserDetailsService maps to ROLE_ prefix at runtime).
+ WHY:     Database-backed auth means the demo isn't tied to a single
+          in-memory user list — students can add/remove roles via the admin
+          endpoint.
+ ============================================================================
+-->
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                            http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <changeSet id="007-create-users" author="trainer">
+        <createTable tableName="users">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="email" type="VARCHAR(120)"><constraints nullable="false" unique="true"/></column>
+            <column name="password_hash" type="VARCHAR(120)"><constraints nullable="false"/></column>
+            <column name="role" type="VARCHAR(20)"><constraints nullable="false"/></column>
+            <column name="enabled" type="BOOLEAN" defaultValueBoolean="true"/>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+        </createTable>
+        <rollback>
+            <dropTable tableName="users"/>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

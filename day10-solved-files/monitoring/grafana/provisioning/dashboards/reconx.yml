@@ -1,0 +1,11 @@
+# TICKET-ADV150 — Provider definition: load every dashboard JSON in /dashboards
+apiVersion: 1
+providers:
+  - name: reconx
+    orgId: 1
+    folder: 'ReconX'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    options:
+      path: /etc/grafana/provisioning/dashboards
