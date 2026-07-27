@@ -1,0 +1,80 @@
+/* ============================================================================
+   TICKET-ADV101 / ADV102 — CSS custom properties + dark theme via data-theme
+   TICKET-ADV104 — animations (fade-in, slide-in, pulse)
+   TICKET-ADV105 — responsive breakpoints (desktop -> tablet -> mobile)
+   TICKET-ADV110 — BEM naming: block__element--modifier
+   ============================================================================ */
+:root {
+  --color-primary: #003366;
+  --color-gold:    #C8A951;
+  --color-slate:   #2E5FA3;
+  --color-success: #28a745;
+  --color-warning: #ffc107;
+  --color-danger:  #dc3545;
+  --color-bg:      #ffffff;
+  --color-text:    #1a1a1a;
+  --color-surface: #f5f5f5;
+  --color-border:  #d4d4d4;
+  --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px;
+  --radius:  4px;
+}
+[data-theme="dark"] {
+  --color-bg:      #1a1a1a;
+  --color-text:    #f5f5f5;
+  --color-surface: #2a2a2a;
+  --color-border:  #3a3a3a;
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  /* TICKET-ADV098 — page shell grid */
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  grid-template-rows: 64px 1fr 40px;
+  grid-template-areas:
+    "header  header"
+    "sidebar main"
+    "footer  footer";
+  min-height: 100vh;
+}
+
+/* TICKET-ADV105 — tablet -> sidebar collapses */
+@media (max-width: 1024px) {
+  body { grid-template-columns: 180px 1fr; }
+}
+@media (max-width: 720px) {
+  body { grid-template-columns: 1fr; grid-template-areas: "header" "main" "footer"; }
+  .layout__sidebar { display: none; }
+}
+
+.layout__header  { grid-area: header;  display: flex; align-items: center; gap: var(--space-4); padding: 0 var(--space-4); background: var(--color-primary); color: #fff; }
+.layout__title   { margin: 0; font-size: 18px; }
+.layout__nav     { display: flex; gap: var(--space-3); margin-left: auto; }
+.layout__nav a   { color: #fff; text-decoration: none; }
+.layout__nav a[aria-current="page"] { border-bottom: 2px solid var(--color-gold); }
+.layout__sidebar { grid-area: sidebar; padding: var(--space-3); border-right: 1px solid var(--color-border); background: var(--color-surface); }
+.layout__main    { grid-area: main;    padding: var(--space-4); }
+.layout__footer  { grid-area: footer;  display: flex; align-items: center; justify-content: center; border-top: 1px solid var(--color-border); }
+
+.stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: var(--space-3); }
+.stat-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius); padding: var(--space-3); }
+.stat-card--warn { border-color: var(--color-warning); }
+.stat-card h3    { margin: 0; font-size: 13px; opacity: 0.7; }
+.stat-card p     { margin: var(--space-2) 0 0; font-size: 22px; font-weight: 700; }
+
+/* TICKET-ADV103 / ADV104 — live feed slide-in */
+#trade-feed { display: flex; flex-direction: column; gap: var(--space-2); margin-top: var(--space-3); max-height: 50vh; overflow-y: auto; }
+.trade-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius); padding: var(--space-2) var(--space-3); animation: slide-in 0.3s ease-out; }
+.trade-card--matched { border-left: 4px solid var(--color-success); }
+.trade-card--break   { border-left: 4px solid var(--color-danger); }
+@keyframes slide-in  { from { transform: translateX(-10%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+button { padding: var(--space-1) var(--space-2); border: 1px solid var(--color-border); background: transparent; color: inherit; border-radius: var(--radius); cursor: pointer; }
+:focus-visible { outline: 2px solid var(--color-gold); outline-offset: 2px; }
