@@ -1,0 +1,32 @@
+# =============================================================================
+# TICKET-ADV044 — profile for Testcontainers-backed integration tests.
+#
+# The `dev` profile pins H2 (driver + dialect), so a Testcontainers Postgres
+# URL alone is not enough — the driver and dialect have to move too. Activating
+# `test` instead of `dev` also keeps KafkaTopicsConfig out of the context
+# (it is @Profile("!dev & !test")).
+#
+# The JDBC url/username/password come from @DynamicPropertySource at run time.
+# =============================================================================
+spring:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
+  liquibase:
+    change-log: classpath:/db/changelog/db.changelog-master.xml
+    enabled: true
+  # No broker in the test environment — declare the beans, don't start listeners.
+  kafka:
+    bootstrap-servers: localhost:9092
+    listener:
+      auto-startup: false
+      missing-topics-fatal: false
+
+logging:
+  level:
+    org.hibernate.SQL: WARN
+    org.testcontainers: INFO
