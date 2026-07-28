@@ -30,5 +30,26 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
+        <!--
+         ADV055 — the repository smoke test runs @DataJpaTest against an in-memory
+         H2. Test scope only: the runtime drivers belong to `api`.
+        -->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!--
+         Instrument.metadata is mapped with hypersistence's JsonBinaryType, which
+         instantiates a Jackson ObjectMapper while Hibernate builds the metamodel.
+         `api` picks Jackson up through spring-boot-starter-web; this module has no
+         such transitive path, so without it the EntityManagerFactory fails with
+         NoClassDefFoundError: com/fasterxml/jackson/databind/ObjectMapper.
+        -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>
