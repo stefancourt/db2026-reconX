@@ -1,14 +1,21 @@
 package com.dbtraining.reconx.domain;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+
 import java.time.Instant;
 
 /**
  * TICKET-ADV074 — Users for JWT-backed RBAC. Named AppUser to avoid clash
  * with Spring Security's User interface.
+ *
+ * <p>{@code @Getter} only — no setters by design. {@code passwordHash} must never
+ * be reassigned by application code, and {@code @ToString} is deliberately absent
+ * so the hash cannot leak into a log line.
  */
 @Entity
 @Table(name = "users")
+@Getter
 public class AppUser {
 
     @Id
@@ -31,11 +38,4 @@ public class AppUser {
     private Instant createdAt;
 
     public AppUser() {}
-
-    public Long getId()           { return id; }
-    public String getEmail()      { return email; }
-    public String getPasswordHash(){ return passwordHash; }
-    public String getRole()       { return role; }
-    public Boolean getEnabled()   { return enabled; }
-    public Instant getCreatedAt() { return createdAt; }
 }

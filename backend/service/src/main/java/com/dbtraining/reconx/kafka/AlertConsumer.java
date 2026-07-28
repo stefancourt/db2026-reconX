@@ -1,7 +1,6 @@
 package com.dbtraining.reconx.kafka;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 /**
@@ -27,9 +26,8 @@ import org.springframework.stereotype.Component;
  * ============================================================================
  */
 @Component
+@Slf4j
 public class AlertConsumer {
-
-    private static final Logger log = LoggerFactory.getLogger(AlertConsumer.class);
 
     public void onAlert(String payload) {
         throw new UnsupportedOperationException("TICKET-ADV133");

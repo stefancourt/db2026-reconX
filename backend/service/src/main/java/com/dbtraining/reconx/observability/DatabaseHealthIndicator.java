@@ -1,5 +1,6 @@
 package com.dbtraining.reconx.observability;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.boot.actuate.health.AbstractHealthIndicator;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.stereotype.Component;
@@ -34,11 +35,10 @@ import javax.sql.DataSource;
  * ============================================================================
  */
 @Component("database")
+@RequiredArgsConstructor
 public class DatabaseHealthIndicator extends AbstractHealthIndicator {
 
     private final DataSource ds;
-
-    public DatabaseHealthIndicator(DataSource ds) { this.ds = ds; }
 
     @Override
     protected void doHealthCheck(Health.Builder builder) throws Exception {

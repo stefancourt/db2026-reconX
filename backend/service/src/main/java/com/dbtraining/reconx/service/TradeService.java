@@ -10,6 +10,7 @@ import com.dbtraining.reconx.repository.InstrumentRepository;
 import com.dbtraining.reconx.repository.TradeRepository;
 import com.dbtraining.reconx.domain.Trade;
 import com.dbtraining.reconx.dto.TradeEvent;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -35,6 +36,7 @@ import static com.dbtraining.reconx.repository.TradeSpecifications.*;
  */
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class TradeService {
 
     private final TradeRepository tradeRepo;
@@ -42,18 +44,6 @@ public class TradeService {
     private final InstrumentRepository instRepo;
     private final TradeEventProducer events;
     private final TradeMetrics metrics;
-
-    public TradeService(TradeRepository tradeRepo,
-                        CounterpartyRepository cpRepo,
-                        InstrumentRepository instRepo,
-                        TradeEventProducer events,
-                        TradeMetrics metrics) {
-        this.tradeRepo = tradeRepo;
-        this.cpRepo = cpRepo;
-        this.instRepo = instRepo;
-        this.events = events;
-        this.metrics = metrics;
-    }
 
     public Trade create(TradeRequest req, String actor) {
         // TODO(TICKET-ADV064): reject duplicate tradeRef via DuplicateTradeRefException,

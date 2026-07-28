@@ -1,8 +1,8 @@
 package com.dbtraining.reconx.kafka;
 
 import com.dbtraining.reconx.dto.TradeEvent;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
@@ -33,16 +33,14 @@ import org.springframework.stereotype.Component;
  * ============================================================================
  */
 @Component
+@Slf4j
+@RequiredArgsConstructor
 public class TradeEventProducer {
 
-    private static final Logger log = LoggerFactory.getLogger(TradeEventProducer.class);
+    // static final — initialised inline, so @RequiredArgsConstructor skips it.
     private static final String TOPIC = "trade-events";
 
     private final KafkaTemplate<String, TradeEvent> template;
-
-    public TradeEventProducer(KafkaTemplate<String, TradeEvent> template) {
-        this.template = template;
-    }
 
     public void publish(TradeEvent event) {
         throw new UnsupportedOperationException("TICKET-ADV129");

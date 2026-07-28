@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -36,15 +37,11 @@ import java.util.Map;
 @RequestMapping("/v1/trades")
 @Tag(name = "trades", description = "Trade CRUD and search")
 @SecurityRequirement(name = "bearerAuth")
+@RequiredArgsConstructor
 public class TradeController {
 
     private final TradeService service;
     private final TradeMapper mapper;
-
-    public TradeController(TradeService service, TradeMapper mapper) {
-        this.service = service;
-        this.mapper = mapper;
-    }
 
     @GetMapping
     @Operation(summary = "List trades — paginated, filterable, sortable")

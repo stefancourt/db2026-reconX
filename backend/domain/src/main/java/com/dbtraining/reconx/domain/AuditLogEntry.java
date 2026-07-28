@@ -1,6 +1,7 @@
 package com.dbtraining.reconx.domain;
 
 import jakarta.persistence.*;
+import lombok.Getter;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
@@ -9,9 +10,14 @@ import java.time.Instant;
 /**
  * TICKET-ADV132 / ADV137 — Append-only audit row written by AuditEventConsumer.
  * Used for the event-sourcing rebuild of trade state (TICKET-ADV137).
+ *
+ * <p>Append-only, so {@code @Getter} and no setters at all. The all-args
+ * constructor stays hand-written: Lombok's {@code @AllArgsConstructor} would
+ * include the generated {@code id}, which no caller should ever supply.
  */
 @Entity
 @Table(name = "audit_log")
+@Getter
 public class AuditLogEntry {
 
     @Id
@@ -61,13 +67,4 @@ public class AuditLogEntry {
         this.beforeState = before;
         this.afterState = after;
     }
-
-    public Long getId()              { return id; }
-    public String getEventId()       { return eventId; }
-    public String getTradeRef()      { return tradeRef; }
-    public String getEventType()     { return eventType; }
-    public Instant getEventTimestamp(){ return eventTimestamp; }
-    public String getActor()         { return actor; }
-    public String getBeforeState()   { return beforeState; }
-    public String getAfterState()    { return afterState; }
 }

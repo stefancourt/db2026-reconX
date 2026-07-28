@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,11 +27,10 @@ import java.util.UUID;
 @RequestMapping("/v1/recon")
 @Tag(name = "recon", description = "Reconciliation operations")
 @SecurityRequirement(name = "bearerAuth")
+@RequiredArgsConstructor
 public class ReconController {
 
     private final ReconBreakRepository breaks;
-
-    public ReconController(ReconBreakRepository breaks) { this.breaks = breaks; }
 
     @PostMapping("/run")
     @Operation(summary = "Trigger a reconciliation job (async)")

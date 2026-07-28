@@ -1,6 +1,8 @@
 package com.dbtraining.reconx.domain;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -13,22 +15,31 @@ import java.util.Objects;
  * <p>Maps the {@code counterparties} table declared in 002-schema.xml and seeded from
  * {@code data/counterparties.csv}. Column lengths match the changelog exactly so
  * {@code hibernate.ddl-auto: validate} passes.
+ *
+ * <p>Lombok: {@code @Getter} at class level, {@code @Setter} only on the three
+ * caller-writable columns. {@code id} and {@code createdAt} are written by the
+ * database and the auditing listener respectively, so they stay read-only. No
+ * {@code @Data} — see the entity policy on {@link Trade}.
  */
 @Entity
 @Table(name = "counterparties")
 @EntityListeners(AuditingEntityListener.class)
+@Getter
 public class Counterparty {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Setter
     @Column(nullable = false, length = 100)
     private String name;
 
+    @Setter
     @Column(name = "lei_code", nullable = false, unique = true, length = 20)
     private String leiCode;
 
+    @Setter
     @Column(nullable = false, length = 10)
     private String region;
 
@@ -37,16 +48,6 @@ public class Counterparty {
     private Instant createdAt;
 
     public Counterparty() {}
-
-    public Long getId()           { return id; }
-    public String getName()       { return name; }
-    public String getLeiCode()    { return leiCode; }
-    public String getRegion()     { return region; }
-    public Instant getCreatedAt() { return createdAt; }
-
-    public void setName(String v)    { this.name = v; }
-    public void setLeiCode(String v) { this.leiCode = v; }
-    public void setRegion(String v)  { this.region = v; }
 
     @Override
     public boolean equals(Object o) {
