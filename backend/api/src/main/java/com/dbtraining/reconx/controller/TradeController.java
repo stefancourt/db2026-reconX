@@ -81,9 +81,8 @@ public class TradeController {
     public TradeResponse updateStatus(@PathVariable Long id,
                                       @RequestBody Map<String, String> body,
                                       @AuthenticationPrincipal Object principal) {
-        // TODO(TICKET-ADV066): read body.get("status") and call
-        //   service.updateStatus(id, status, actor). Return mapper.toResponse(saved).
-        throw new UnsupportedOperationException("TICKET-ADV066");
+        String status = body.get("status");
+        return mapper.toResponse(service.updateStatus(id, status, String.valueOf(principal)));
     }
 
     @DeleteMapping("/{id}")
