@@ -3,6 +3,7 @@ package com.dbtraining.reconx.service;
 import com.dbtraining.reconx.exception.InvalidTradeException;
 import com.dbtraining.reconx.repository.InstrumentRepository;
 import com.dbtraining.reconx.domain.Instrument;
+import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
@@ -13,11 +14,10 @@ import org.springframework.stereotype.Service;
  * Symbol lookup is hot — most requests touch the cache, not the DB.
  */
 @Service
+@RequiredArgsConstructor
 public class InstrumentService {
 
     private final InstrumentRepository repo;
-
-    public InstrumentService(InstrumentRepository repo) { this.repo = repo; }
 
     @Cacheable("instruments")
     public Instrument findBySymbol(String symbol) {

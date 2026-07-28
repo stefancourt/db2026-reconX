@@ -2,16 +2,29 @@ package com.dbtraining.reconx.domain;
 
 import io.hypersistence.utils.hibernate.type.json.JsonBinaryType;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.Type;
 
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Instrument reference data.
+ *
+ * <p>{@code @Setter} is class-level here with {@code AccessLevel.NONE} on the
+ * generated id — the database owns that value. No {@code @Data}: see the entity
+ * Lombok policy on {@link Trade}.
+ */
 @Entity
 @Table(name = "instruments")
+@Getter
+@Setter
 public class Instrument {
 
     @Id
+    @Setter(AccessLevel.NONE)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
@@ -41,19 +54,4 @@ public class Instrument {
     private String isin;
 
     public Instrument() {}
-
-    public Long getId()                    { return id; }
-    public String getSymbol()              { return symbol; }
-    public String getName()                { return name; }
-    public AssetClass getAssetClass()      { return assetClass; }
-    public String getCurrency()            { return currency; }
-    public Map<String, Object> getMetadata() { return metadata; }
-    public String getIsin()                { return isin; }
-
-    public void setSymbol(String v)                  { this.symbol = v; }
-    public void setName(String v)                    { this.name = v; }
-    public void setAssetClass(AssetClass v)          { this.assetClass = v; }
-    public void setCurrency(String v)                { this.currency = v; }
-    public void setMetadata(Map<String, Object> v)   { this.metadata = v; }
-    public void setIsin(String v)                    { this.isin = v; }
 }

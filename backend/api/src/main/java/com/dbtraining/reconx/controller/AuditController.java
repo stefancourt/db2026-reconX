@@ -5,6 +5,7 @@ import com.dbtraining.reconx.domain.AuditLogEntry;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
@@ -18,11 +19,10 @@ import java.util.List;
 @RequestMapping("/v1/audit")
 @Tag(name = "audit")
 @SecurityRequirement(name = "bearerAuth")
+@RequiredArgsConstructor
 public class AuditController {
 
     private final AuditLogRepository auditRepo;
-
-    public AuditController(AuditLogRepository auditRepo) { this.auditRepo = auditRepo; }
 
     @GetMapping("/trades/{tradeRef}")
     @Operation(summary = "Get audit history for a trade (by tradeRef)")

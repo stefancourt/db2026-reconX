@@ -1,23 +1,34 @@
 package com.dbtraining.reconx.domain;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.time.Instant;
 
 /**
  * TICKET-ADV070 — Recon break record. Status transitions: OPEN -> RESOLVED.
  * Exposed via PUT /api/v1/recon/results/{id}/resolve.
+ *
+ * <p>Only {@code tradeId} and {@code discrepancyType} get a {@code @Setter}.
+ * {@code status}, {@code resolvedAt} and {@code resolutionNote} move together and
+ * only through {@link #resolve(String)} — a generated {@code setStatus} would let a
+ * caller mark a break RESOLVED with no timestamp and no note.
  */
 @Entity
 @Table(name = "recon_breaks")
+@Getter
 public class ReconBreak {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Setter
     @Column(name = "trade_id", nullable = false)
     private Long tradeId;
 
+    @Setter
     @Column(name = "discrepancy_type", nullable = false, length = 30)
     private String discrepancyType;
 
@@ -34,17 +45,6 @@ public class ReconBreak {
     private String resolutionNote;
 
     public ReconBreak() {}
-
-    public Long getId()                { return id; }
-    public Long getTradeId()           { return tradeId; }
-    public String getDiscrepancyType() { return discrepancyType; }
-    public String getStatus()          { return status; }
-    public Instant getDetectedAt()     { return detectedAt; }
-    public Instant getResolvedAt()     { return resolvedAt; }
-    public String getResolutionNote()  { return resolutionNote; }
-
-    public void setTradeId(Long v)              { this.tradeId = v; }
-    public void setDiscrepancyType(String v)    { this.discrepancyType = v; }
 
     public void resolve(String note) {
         this.status = "RESOLVED";
