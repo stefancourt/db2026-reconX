@@ -59,10 +59,10 @@ public class TradeMetrics {
     }
 
     public void incrementTradeCreated() {
-        // TODO(TICKET-ADV083): increment the tradeCreated counter.
+        tradeCreated.increment();
     }
 
     public void recordTradeValue(double value) {
-        // TODO(TICKET-ADV086): record the value on the tradeValue distribution summary.
+        tradeValue.record(value);
     }
 }
