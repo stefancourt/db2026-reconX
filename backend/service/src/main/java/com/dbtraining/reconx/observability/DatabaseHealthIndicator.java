@@ -6,6 +6,8 @@ import org.springframework.boot.actuate.health.Health;
 import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.Statement;
 
 /**
  * ============================================================================
@@ -42,7 +44,11 @@ public class DatabaseHealthIndicator extends AbstractHealthIndicator {
 
     @Override
     protected void doHealthCheck(Health.Builder builder) throws Exception {
-        // TODO(TICKET-ADV059): run `SELECT 1` with a 2s timeout and record latencyMs.
-        builder.up();
+        long start = System.nanoTime();
+        try (Connection c = ds.getConnection(); Statement s = c.createStatement()) {
+            s.setQueryTimeout(2);
+            s.execute("SELECT 1");
+            builder.up().withDetail("latencyMs", (System.nanoTime() - start) / 1_000_000);
+        }
     }
 }
