@@ -27,15 +27,22 @@ CREATE TABLE trades (
 ) PARTITION BY RANGE (trade_date);
 
 -- 3. Per-month partitions (12-month rolling window). Add new ones on schedule.
+CREATE INDEX idx_trades_status          ON trades (status);
+CREATE INDEX idx_trades_instrument_id   ON trades (instrument_id);
+CREATE INDEX idx_trades_counterparty_id ON trades (counterparty_id);
+
+-- Step 4: Four child partitions for 2026-04 through 2026-07
+CREATE TABLE trades_y2026m04 PARTITION OF trades
+    FOR VALUES FROM ('2026-04-01') TO ('2026-05-01');
+
 CREATE TABLE trades_y2026m05 PARTITION OF trades
     FOR VALUES FROM ('2026-05-01') TO ('2026-06-01');
+
 CREATE TABLE trades_y2026m06 PARTITION OF trades
     FOR VALUES FROM ('2026-06-01') TO ('2026-07-01');
+
 CREATE TABLE trades_y2026m07 PARTITION OF trades
     FOR VALUES FROM ('2026-07-01') TO ('2026-08-01');
 
--- 4. Migrate data
-INSERT INTO trades SELECT * FROM trades_legacy;
-
--- 5. Drop legacy table after verification
--- DROP TABLE trades_legacy;
+-- Step 5: Default partition as safety catch
+CREATE TABLE trades_default PARTITION OF trades DEFAULT;

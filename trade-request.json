@@ -1,0 +1,10 @@
+{
+  "tradeRef": "ABC-20260129-0001",
+  "instrumentId": "1",
+  "counterpartyId": "1",
+  "quantity": 100,
+  "side": "BUY",
+  "price": 50.0,
+  "tradeDate": "2026-01-15",
+  "assetClass": "EQUITY"
+}

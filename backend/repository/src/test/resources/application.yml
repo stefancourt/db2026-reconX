@@ -1,0 +1,25 @@
+# =============================================================================
+# ADV055 — test slice config for the `repository` module.
+#
+# The Liquibase changelog lives in `api`, which this module cannot depend on, so
+# the schema comes from schema.sql instead and Hibernate generates no DDL of its
+# own (ddl-auto: none). Same table shapes as 002-schema.xml + 009-envers.xml.
+# =============================================================================
+spring:
+  datasource:
+    url: jdbc:h2:mem:reconx-repo-test;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  sql:
+    init:
+      mode: always
+  jpa:
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate.dialect: org.hibernate.dialect.H2Dialect
+
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
