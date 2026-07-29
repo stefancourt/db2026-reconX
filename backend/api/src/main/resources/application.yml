@@ -36,6 +36,10 @@ spring:
     init:
       mode: never
 
+  # ADV096 — JMX exposure for runtime tuning via JConsole (off by default in Boot 3)
+  jmx:
+    enabled: true
+
   # ADV081-ADV082 — Caffeine cache config; per-cache spec overrides the global one.
   cache:
     cache-names: instruments,counterparties

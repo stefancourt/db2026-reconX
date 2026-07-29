@@ -30,6 +30,12 @@
             <artifactId>reconx-service</artifactId>
         </dependency>
 
+        <!-- Custom Spring Boot Starter (ADV095) -->
+        <dependency>
+            <groupId>com.dbtraining.reconx</groupId>
+            <artifactId>recon-audit-starter</artifactId>
+        </dependency>
+
         <!-- Web + Validation (ADV063-ADV071) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
