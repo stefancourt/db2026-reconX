@@ -18,10 +18,16 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import org.springframework.format.annotation.DateTimeFormat;
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+
+import com.dbtraining.reconx.domain.TradeStatus;
+import com.dbtraining.reconx.service.TradeQueryService;
+
+
 
 /**
  * ============================================================================
@@ -40,25 +46,26 @@ public class TradeController {
 
     private final TradeService service;
     private final TradeMapper mapper;
+    private final TradeQueryService queryService;
 
-    public TradeController(TradeService service, TradeMapper mapper) {
+    public TradeController(TradeService service, TradeMapper mapper, TradeQueryService queryService) {
         this.service = service;
         this.mapper = mapper;
+        this.queryService = queryService;
     }
 
     @GetMapping
     @Operation(summary = "List trades — paginated, filterable, sortable")
     public PagedResponse<TradeResponse> list(
-            @RequestParam(required = false) LocalDate from,
-            @RequestParam(required = false) LocalDate to,
-            @RequestParam(required = false) String status,
-            @RequestParam(required = false) Long counterpartyId,
-            @PageableDefault(size = 20, sort = "tradeDate", direction = Sort.Direction.DESC) Pageable pageable) {
-        // TODO(TICKET-ADV063): delegate to service.list(from, to, status, counterpartyId, pageable)
-        //   and wrap the resulting Page<Trade> via PagedResponse.from(page, mapper::toResponse).
-        //   For Day 1 return an empty PagedResponse so the React grid renders
-        //   "no trades match" while the JPA + Specifications work is still pending.
-        return new PagedResponse<>(List.of(), 0, 20, 0, 0);
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+        @RequestParam(required = false) TradeStatus status,
+        @RequestParam(required = false) Long counterpartyId,
+        @PageableDefault(size = 20, sort = "tradeDate", direction = Sort.Direction.DESC)
+        Pageable pageable
+    ) {
+        var page = queryService.search(from, to, status, counterpartyId, pageable);
+        return PagedResponse.of(page, mapper::toResponse);
     }
 
     @PostMapping
