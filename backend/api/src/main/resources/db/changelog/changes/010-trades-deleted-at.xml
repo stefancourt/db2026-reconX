@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ ============================================================================
+ TICKET-ADV139 — trades.deleted_at forward migration
+ WHAT:    Add nullable deleted_at TIMESTAMP to trades for soft-delete support.
+ WHY:     Older databases created before ADV006 need this column to support
+          TradeController.delete() / TradeService.softDelete().
+ ============================================================================
+-->
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                            http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <changeSet id="010-add-trades-deleted-at" author="trainer">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="trades" columnName="deleted_at"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="trades">
+            <column name="deleted_at" type="TIMESTAMP"/>
+        </addColumn>
+        <rollback>
+            <dropColumn tableName="trades" columnName="deleted_at"/>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>
