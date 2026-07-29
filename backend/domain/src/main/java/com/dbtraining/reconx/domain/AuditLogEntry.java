@@ -2,8 +2,6 @@ package com.dbtraining.reconx.domain;
 
 import jakarta.persistence.*;
 import lombok.Getter;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
 
 import java.time.Instant;
 
@@ -39,20 +37,12 @@ public class AuditLogEntry {
     @Column(length = 100)
     private String actor;
 
-    // No @Lob — Hibernate 6 + Postgres treats @Lob String as an OID column.
-    //
-    // columnDefinition = "TEXT" does not work either: the changelog declares these
-    // as CLOB, which Liquibase renders as `text` on Postgres but as `clob` on H2, so
-    // ddl-auto: validate failed on the dev profile with "wrong column type ... found
-    // [character large object], but expecting [text]". Declaring the JDBC type instead
-    // of a literal DDL string lets each dialect pick its own spelling — `text` on
-    // Postgres, `clob` on H2 — and both match what Liquibase created.
-    @JdbcTypeCode(SqlTypes.CLOB)
-    @Column(name = "before_state")
+    // Liquibase renders type="CLOB" as TEXT on Postgres. Match that explicitly
+    // so Hibernate ddl-auto: validate doesn't complain about type mismatches.
+    @Column(name = "before_state", columnDefinition = "text")
     private String beforeState;
 
-    @JdbcTypeCode(SqlTypes.CLOB)
-    @Column(name = "after_state")
+    @Column(name = "after_state", columnDefinition = "text")
     private String afterState;
 
     public AuditLogEntry() {}
