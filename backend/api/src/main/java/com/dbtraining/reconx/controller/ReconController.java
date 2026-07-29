@@ -48,10 +48,10 @@ public class ReconController {
     @PutMapping("/results/{id}/resolve")
     @Operation(summary = "Mark a recon break as RESOLVED with a note")
     public ResponseEntity<ReconBreak> resolve(@PathVariable Long id,
-                                              @RequestBody Map<String, String> body) {
-        // TODO(TICKET-ADV070): load the ReconBreak, call rb.resolve(note), save,
-        //   and return 200 with the updated entity. Throw TradeNotFoundException
-        //   when the id is unknown.
-        throw new UnsupportedOperationException("TICKET-ADV070");
+                                            @RequestBody Map<String, String> body) {
+        ReconBreak rb = breaks.findById(id)
+                .orElseThrow(() -> new TradeNotFoundException("recon_break " + id));
+        rb.resolve(body.getOrDefault("note", "manually resolved"));
+        return ResponseEntity.ok(breaks.save(rb));
     }
 }
