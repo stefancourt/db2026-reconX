@@ -1,0 +1,55 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "graphTooltip": 1,
+  "id": null,
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "API request rate by endpoint (ADV087)",
+      "datasource": { "type": "prometheus", "uid": "reconx-prometheus" },
+      "targets": [
+        { "expr": "sum(rate(http_server_requests_seconds_count[1m])) by (uri)", "legendFormat": "{{uri}}" }
+      ],
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 }
+    },
+    {
+      "type": "timeseries",
+      "title": "API P95 latency (ADV088)",
+      "datasource": { "type": "prometheus", "uid": "reconx-prometheus" },
+      "targets": [
+        { "expr": "histogram_quantile(0.95, sum(rate(http_server_requests_seconds_bucket[5m])) by (le, uri))", "legendFormat": "{{uri}}" }
+      ],
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 }
+    },
+    {
+      "type": "stat",
+      "title": "Open recon breaks (ADV091)",
+      "datasource": { "type": "prometheus", "uid": "reconx-prometheus" },
+      "targets": [{ "expr": "recon_break_count" }],
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 8 }
+    },
+    {
+      "type": "timeseries",
+      "title": "Trades created / sec (ADV089)",
+      "datasource": { "type": "prometheus", "uid": "reconx-prometheus" },
+      "targets": [{ "expr": "sum(rate(trade_created_total[1m]))" }],
+      "gridPos": { "h": 8, "w": 12, "x": 6, "y": 8 }
+    },
+    {
+      "type": "timeseries",
+      "title": "Reconciliation duration histogram (ADV090)",
+      "datasource": { "type": "prometheus", "uid": "reconx-prometheus" },
+      "targets": [{ "expr": "sum(rate(reconciliation_duration_seconds_bucket[5m])) by (le)" }],
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 16 }
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 39,
+  "tags": ["reconx"],
+  "templating": { "list": [] },
+  "time": { "from": "now-15m", "to": "now" },
+  "title": "ReconX Overview",
+  "uid": "reconx-overview",
+  "version": 1
+}
