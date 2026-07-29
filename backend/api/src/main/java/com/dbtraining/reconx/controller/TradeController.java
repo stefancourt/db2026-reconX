@@ -50,26 +50,6 @@ public class TradeController {
     private final TradeMapper mapper;
     private final TradeQueryService queryService;
 
-<<<<<<< HEAD:backend/src/main/java/com/dbtraining/reconx/controller/TradeController.java
-    public TradeController(TradeService service, TradeMapper mapper, TradeQueryService queryService) {
-        this.service = service;
-        this.mapper = mapper;
-        this.queryService = queryService;
-    }
-
-    @GetMapping
-    @Operation(summary = "List trades — paginated, filterable, sortable")
-    public PagedResponse<TradeResponse> list(
-        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
-        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
-        @RequestParam(required = false) TradeStatus status,
-        @RequestParam(required = false) Long counterpartyId,
-        @PageableDefault(size = 20, sort = "tradeDate", direction = Sort.Direction.DESC)
-        Pageable pageable
-    ) {
-        var page = queryService.search(from, to, status, counterpartyId, pageable);
-        return PagedResponse.of(page, mapper::toResponse);
-=======
     @GetMapping
     @Operation(summary = "List trades — paginated, filterable, sortable")
     public PagedResponse<TradeResponse> list(
@@ -80,7 +60,6 @@ public class TradeController {
             @PageableDefault(size = 20, sort = "tradeDate", direction = Sort.Direction.DESC) Pageable pageable) {
         Page<Trade> page = service.list(from, to, status, counterpartyId, pageable);
         return PagedResponse.from(page, mapper::toResponse);
->>>>>>> origin/main:backend/api/src/main/java/com/dbtraining/reconx/controller/TradeController.java
     }
 
     @PostMapping
@@ -113,8 +92,8 @@ public class TradeController {
     @DeleteMapping("/{id}")
     @Operation(summary = "Soft delete (sets deleted_at)")
     public ResponseEntity<Void> delete(@PathVariable Long id,
-                                       @AuthenticationPrincipal Object principal) {
-        // TODO(TICKET-ADV067): service.softDelete(id, actor); return 204 No Content.
-        throw new UnsupportedOperationException("TICKET-ADV067");
+                                    @AuthenticationPrincipal Object principal) {
+        service.softDelete(id, String.valueOf(principal));
+        return ResponseEntity.noContent().build();
     }
 }

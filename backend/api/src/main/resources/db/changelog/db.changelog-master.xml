@@ -26,5 +26,6 @@
     <include file="changes/007-users-rbac.xml"    relativeToChangelogFile="true"/>
     <include file="changes/008-seed.xml"          relativeToChangelogFile="true"/>
     <include file="changes/009-envers.xml"        relativeToChangelogFile="true"/>
+    <include file="changes/010-trades-deleted-at.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>
