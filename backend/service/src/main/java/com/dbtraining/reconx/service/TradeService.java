@@ -8,7 +8,12 @@ import com.dbtraining.reconx.observability.TradeMetrics;
 import com.dbtraining.reconx.repository.CounterpartyRepository;
 import com.dbtraining.reconx.repository.InstrumentRepository;
 import com.dbtraining.reconx.repository.TradeRepository;
+import com.dbtraining.reconx.domain.AssetClass;
+import com.dbtraining.reconx.domain.Counterparty;
+import com.dbtraining.reconx.domain.Instrument;
 import com.dbtraining.reconx.domain.Trade;
+import com.dbtraining.reconx.domain.TradeStatus;
+import com.dbtraining.reconx.model.Side;
 import com.dbtraining.reconx.dto.TradeEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -51,14 +56,14 @@ public class TradeService {
             throw new DuplicateTradeRefException(req.tradeRef());
         }
 
-        Instrument instrument = instrumentRepo.findById(req.instrumentId())
+        Instrument instrument = instRepo.findById(req.instrumentId())
                 .orElseThrow(() ->
                         new TradeNotFoundException(
                                 "Instrument not found: " + req.instrumentId()
                         )
                 );
 
-        Counterparty counterparty = counterpartyRepo.findById(req.counterpartyId())
+        Counterparty counterparty = cpRepo.findById(req.counterpartyId())
                 .orElseThrow(() ->
                         new TradeNotFoundException(
                                 "Counterparty not found: " + req.counterpartyId()
@@ -71,7 +76,10 @@ public class TradeService {
         trade.setCounterparty(counterparty);
         trade.setQuantity(req.quantity());
         trade.setPrice(req.price());
-        trade.setSide(req.side());
+        // TradeRequest carries assetClass/side as Strings (the wire contract);
+        // the entity columns are @Enumerated(STRING) — convert here, not in the DTO.
+        trade.setAssetClass(AssetClass.valueOf(req.assetClass()));
+        trade.setSide(Side.valueOf(req.side()));
         trade.setTradeDate(req.tradeDate());
         trade.setStatus(TradeStatus.PENDING);
 
