@@ -87,4 +87,14 @@ class TradeControllerWebMvcTest {
                     .content(objectMapper.writeValueAsString(validRequest())))
             .andExpect(status().isUnauthorized());
     }
+    
+    @Test
+    @WithMockUser(roles = "VIEWER")
+    void testCreateTrade_viewerRole_returns403() throws Exception {
+    mockMvc.perform(post("/api/v1/trades")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(validRequest()))
+                    .with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf()))
+            .andExpect(status().isForbidden());
+    }
 }
