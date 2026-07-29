@@ -78,7 +78,6 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .headers(h -> h.frameOptions(f -> f.disable())) // allow /h2 in dev
                 .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
-                .requestMatchers("/v1/recon/**").hasAnyRole("RECON_ANALYST","ADMIN")
                 .build();
     }
 

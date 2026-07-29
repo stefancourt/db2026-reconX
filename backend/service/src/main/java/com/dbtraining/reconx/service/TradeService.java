@@ -21,7 +21,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.UUID;
 
-import static com.dbtraining.reconx.repository.TradeSpecifications.*;
+import static com.dbtraining.reconx.repository.TradeSpecification.*;
 
 /**
  * ============================================================================

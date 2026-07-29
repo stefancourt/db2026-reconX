@@ -26,9 +26,6 @@ import java.util.List;
 import java.util.Map;
 
 import com.dbtraining.reconx.domain.TradeStatus;
-import com.dbtraining.reconx.service.TradeQueryService;
-
-
 
 /**
  * ============================================================================
@@ -48,7 +45,6 @@ public class TradeController {
 
     private final TradeService service;
     private final TradeMapper mapper;
-    private final TradeQueryService queryService;
 
     @GetMapping
     @Operation(summary = "List trades — paginated, filterable, sortable")

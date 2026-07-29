@@ -1,10 +1,7 @@
 package com.dbtraining.reconx.repository;
 
 import com.dbtraining.reconx.domain.Trade;
-<<<<<<< HEAD:backend/src/main/java/com/dbtraining/reconx/repository/TradeSpecifications.java
 import com.dbtraining.reconx.domain.TradeStatus;
-=======
->>>>>>> origin/main:backend/repository/src/main/java/com/dbtraining/reconx/repository/TradeSpecifications.java
 import org.springframework.data.jpa.domain.Specification;
 
 import java.time.LocalDate;
