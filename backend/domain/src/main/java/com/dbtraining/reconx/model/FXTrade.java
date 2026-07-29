@@ -71,9 +71,9 @@ public final class FXTrade extends Trade implements TradeType {
 
     @Override public String toString() {
         // NOTE: counterpartyId is omitted to remove PII from logs.
-        return "FXTrade[ref=%s, %s/%s, notional=%s, rate=%s, side=%s]"
+        return "FXTrade[ref=%s, %s/%s, notional=%s %s, rate=%s, side=%s]"
             .formatted(tradeRef, ccy1.getCurrencyCode(), ccy2.getCurrencyCode(),
-                       notionalCcy1, fxRate, side);
+                       notionalCcy1, ccy1.getCurrencyCode(), fxRate, side);
     }
 
     public static final class Builder {
