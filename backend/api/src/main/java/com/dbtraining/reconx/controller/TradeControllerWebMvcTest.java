@@ -1,4 +1,4 @@
-//Ticket-ADV075 Tejas
+//Ticket-ADV075 and 076 Tejas
 
 package com.dbtraining.reconx.controller;
 
@@ -78,5 +78,13 @@ class TradeControllerWebMvcTest {
                 .andExpect(header().string("Location", containsString("/api/v1/trades/42")))
                 .andExpect(jsonPath("$.id").value(42))
                 .andExpect(jsonPath("$.tradeRef").value("TRD-20260315-9999"));
+    }
+    
+    @Test
+    void testCreateTrade_unauthenticated_returns401() throws Exception {
+    mockMvc.perform(post("/api/v1/trades")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(validRequest())))
+            .andExpect(status().isUnauthorized());
     }
 }
