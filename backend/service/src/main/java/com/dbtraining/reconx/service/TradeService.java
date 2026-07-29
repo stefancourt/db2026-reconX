@@ -45,14 +45,47 @@ public class TradeService {
     private final TradeEventProducer events;
     private final TradeMetrics metrics;
 
+    @Transactional
     public Trade create(TradeRequest req, String actor) {
-        // TODO(TICKET-ADV064): reject duplicate tradeRef via DuplicateTradeRefException,
-        //   build a new Trade with instrument + counterparty looked up from
-        //   their repos (throw TradeNotFoundException on miss), status = "PENDING",
-        //   save, then:
-        //     - metrics.incrementTradeCreated() + metrics.recordTradeValue(qty*price) — TICKET-ADV083
-        //     - events.publish(new TradeEvent(... TRADE_CREATED ... actor ...)) — TICKET-ADV129
-        throw new UnsupportedOperationException("TICKET-ADV064");
+        if (tradeRepo.findByTradeRef(req.tradeRef()).isPresent()) {
+            throw new DuplicateTradeRefException(req.tradeRef());
+        }
+
+        Instrument instrument = instrumentRepo.findById(req.instrumentId())
+                .orElseThrow(() ->
+                        new TradeNotFoundException(
+                                "Instrument not found: " + req.instrumentId()
+                        )
+                );
+
+        Counterparty counterparty = counterpartyRepo.findById(req.counterpartyId())
+                .orElseThrow(() ->
+                        new TradeNotFoundException(
+                                "Counterparty not found: " + req.counterpartyId()
+                        )
+                );
+
+        Trade trade = new Trade();
+        trade.setTradeRef(req.tradeRef());
+        trade.setInstrument(instrument);
+        trade.setCounterparty(counterparty);
+        trade.setQuantity(req.quantity());
+        trade.setPrice(req.price());
+        trade.setSide(req.side());
+        trade.setTradeDate(req.tradeDate());
+        trade.setStatus(TradeStatus.PENDING);
+
+        Trade saved = tradeRepo.save(trade);
+
+        metrics.incrementTradeCreated();
+
+        double tradeValue = saved.getQuantity()
+                .multiply(saved.getPrice())
+                .doubleValue();
+
+        metrics.recordTradeValue(tradeValue);
+
+        return saved;
     }
 
     public Trade update(Long id, TradeRequest req, String actor) {
