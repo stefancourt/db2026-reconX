@@ -222,6 +222,31 @@
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
+            <!--
+             ADV078/ADV079 — *IT classes are integration tests: surefire's default
+             includes (*Test, Test*, *Tests, *TestCase) skip them, so they run in
+             the integration-test phase under failsafe. `mvn test` stays fast and
+             Docker-free; `mvn verify` runs the Testcontainers suite.
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <configuration>
+                    <systemPropertyVariables>
+                        <api.version>1.41</api.version>
+                    </systemPropertyVariables>
+                    <!-- `-Dit.test=X` must not fail the four modules that have no IT. -->
+                    <failIfNoSpecifiedTests>false</failIfNoSpecifiedTests>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <!-- ADV046 / ADV156 — JaCoCo coverage gate (>=85%) -->
             <plugin>
                 <groupId>org.jacoco</groupId>
