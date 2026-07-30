@@ -95,6 +95,15 @@ public class TradeController {
         service.softDelete(id, String.valueOf(principal));
         return ResponseEntity.noContent().build();
     }
+
+    // -------------------------------------------------------------------------
+    // TICKET-ADV080 — Deprecated endpoint example
+    //
+    // The old /old-search surface area was superseded by the filterable list
+    // endpoint above (GET /api/v1/trades?status=...). It keeps returning 410 Gone
+    // until its Sunset date so callers can detect the retirement rather than
+    // silently receiving a 404.
+    // -------------------------------------------------------------------------
     @Deprecated(since = "v1.4.0", forRemoval = true)
     @GetMapping(value = "/old-search", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "[DEPRECATED] Old search — use GET /api/v1/trades?status=... instead",

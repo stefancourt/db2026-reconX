@@ -1,5 +1,6 @@
 package com.dbtraining.reconx.service;
 
+import com.dbtraining.reconx.dto.TradeMapper;
 import com.dbtraining.reconx.dto.TradeRequest;
 import com.dbtraining.reconx.exception.DuplicateTradeRefException;
 import com.dbtraining.reconx.exception.TradeNotFoundException;
@@ -8,12 +9,7 @@ import com.dbtraining.reconx.observability.TradeMetrics;
 import com.dbtraining.reconx.repository.CounterpartyRepository;
 import com.dbtraining.reconx.repository.InstrumentRepository;
 import com.dbtraining.reconx.repository.TradeRepository;
-import com.dbtraining.reconx.domain.AssetClass;
-import com.dbtraining.reconx.domain.Counterparty;
-import com.dbtraining.reconx.domain.Instrument;
 import com.dbtraining.reconx.domain.Trade;
-import com.dbtraining.reconx.domain.TradeStatus;
-import com.dbtraining.reconx.model.Side;
 import com.dbtraining.reconx.dto.TradeEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -49,49 +45,29 @@ public class TradeService {
     private final InstrumentRepository instRepo;
     private final TradeEventProducer events;
     private final TradeMetrics metrics;
+    private final TradeMapper mapper;
 
-    @Transactional
     public Trade create(TradeRequest req, String actor) {
         if (tradeRepo.findByTradeRef(req.tradeRef()).isPresent()) {
-            throw new DuplicateTradeRefException(req.tradeRef());
+            throw new DuplicateTradeRefException("tradeRef already exists: " + req.tradeRef());
         }
+        var instrument = instRepo.findById(req.instrumentId())
+            .orElseThrow(() -> new TradeNotFoundException("instrument id=" + req.instrumentId()));
+        var counterparty = cpRepo.findById(req.counterpartyId())
+            .orElseThrow(() -> new TradeNotFoundException("counterparty id=" + req.counterpartyId()));
 
-        Instrument instrument = instRepo.findById(req.instrumentId())
-                .orElseThrow(() ->
-                        new TradeNotFoundException(
-                                "Instrument not found: " + req.instrumentId()
-                        )
-                );
-
-        Counterparty counterparty = cpRepo.findById(req.counterpartyId())
-                .orElseThrow(() ->
-                        new TradeNotFoundException(
-                                "Counterparty not found: " + req.counterpartyId()
-                        )
-                );
-
-        Trade trade = new Trade();
-        trade.setTradeRef(req.tradeRef());
+        Trade trade = mapper.toEntity(req);
         trade.setInstrument(instrument);
         trade.setCounterparty(counterparty);
-        trade.setQuantity(req.quantity());
-        trade.setPrice(req.price());
-        // TradeRequest carries assetClass/side as Strings (the wire contract);
-        // the entity columns are @Enumerated(STRING) — convert here, not in the DTO.
-        trade.setAssetClass(AssetClass.valueOf(req.assetClass()));
-        trade.setSide(Side.valueOf(req.side()));
-        trade.setTradeDate(req.tradeDate());
-        trade.setStatus(TradeStatus.PENDING);
 
         Trade saved = tradeRepo.save(trade);
 
         metrics.incrementTradeCreated();
+        metrics.recordTradeValue(req.quantity().multiply(req.price()).doubleValue());
 
-        double tradeValue = saved.getQuantity()
-                .multiply(saved.getPrice())
-                .doubleValue();
-
-        metrics.recordTradeValue(tradeValue);
+        events.publish(new TradeEvent(
+            UUID.randomUUID(), saved.getTradeRef(),
+            TradeEvent.EventType.TRADE_CREATED, Instant.now(), actor, null, null));
 
         return saved;
     }
