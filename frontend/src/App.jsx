@@ -1,11 +1,8 @@
-// TICKET-ADV122 — Lazy + Suspense for route-based code splitting
+// Lazy + Suspense for route-based code splitting
 import React, { Suspense, lazy } from 'react';
 import { Routes, Route, Link, Navigate } from 'react-router-dom';
 import { withErrorBoundary } from '@components/withErrorBoundary.jsx';
 
-// TODO(TICKET-ADV122): wrap each page import in React.lazy() so Vite emits a
-// separate chunk per route. The <Suspense> fallback below shows while the
-// chunk downloads.
 const Dashboard = lazy(() => import('@pages/Dashboard.jsx'));
 const Trades    = lazy(() => import('@pages/Trades.jsx'));
 const AddTrade  = lazy(() => import('@pages/AddTrade.jsx'));
