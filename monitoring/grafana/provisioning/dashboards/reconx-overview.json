@@ -27,6 +27,21 @@
       "title": "Open recon breaks (ADV091)",
       "datasource": { "type": "prometheus", "uid": "reconx-prometheus" },
       "targets": [{ "expr": "recon_break_count" }],
+      "options": { "colorMode": "value", "graphMode": "none", "textMode": "value" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 10 },
+              { "color": "red", "value": 50 }
+            ]
+          }
+        },
+        "overrides": []
+      },
       "gridPos": { "h": 4, "w": 6, "x": 0, "y": 8 }
     },
     {
@@ -42,6 +57,20 @@
       "datasource": { "type": "prometheus", "uid": "reconx-prometheus" },
       "targets": [{ "expr": "sum(rate(reconciliation_duration_seconds_bucket[5m])) by (le)" }],
       "gridPos": { "h": 8, "w": 24, "x": 0, "y": 16 }
+    },
+    {
+      "type": "piechart",
+      "title": "Trades by status (ADV092)",
+      "datasource": { "type": "prometheus", "uid": "reconx-prometheus" },
+      "targets": [
+        { "expr": "sum by (status) (trades_by_status)", "legendFormat": "{{status}}" }
+      ],
+      "options": {
+        "pieType": "pie",
+        "legend": { "displayMode": "list", "placement": "right", "showLegend": true, "values": ["value"] },
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 18, "y": 8 }
     }
   ],
   "refresh": "10s",
