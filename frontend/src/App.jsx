@@ -3,6 +3,7 @@ import React, { Suspense, lazy } from 'react';
 import { Routes, Route, Link, Navigate } from 'react-router-dom';
 import { withErrorBoundary } from '@components/withErrorBoundary.jsx';
 
+// Lazy-loaded pages (each becomes its own JS chunk)
 const Dashboard = lazy(() => import('@pages/Dashboard.jsx'));
 const Trades    = lazy(() => import('@pages/Trades.jsx'));
 const AddTrade  = lazy(() => import('@pages/AddTrade.jsx'));
@@ -19,6 +20,7 @@ function App() {
           <Link to="/trades/new">Add trade</Link>
         </nav>
       </header>
+
       <main className="layout__main">
         <Suspense fallback={<div className="loader">Loading…</div>}>
           <Routes>

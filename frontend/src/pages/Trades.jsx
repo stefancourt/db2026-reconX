@@ -1,6 +1,6 @@
 // TICKET-ADV114 — Compound DataTable.
 // TICKET-ADV117 — useDebouncedSearch.
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { withAuth } from '@components/withAuth.jsx';
 import DataTable from '@components/DataTable.jsx';
 import { useDebouncedSearch } from '@hooks/useDebouncedSearch.js';
@@ -12,6 +12,14 @@ function Trades() {
   const [page, setPage] = useState(0);
   const [data, setData] = useState({ items: [], totalPages: 0 });
 
+  // TICKET-ADV121 — selection state + stable callback for memoised <TradeRow />
+  const [selectedId, setSelectedId] = useState(null);
+
+  // Reference-stable across renders — required for ADV119 memoisation to hold
+  const handleSelect = useCallback((id) => {
+    setSelectedId(id);
+  }, []);
+
   // TODO(TICKET-ADV114 + ADV117): useEffect that:
   //   - builds a query string from `page` and `debounced` (status filter)
   //   - calls api.listTrades(params) and stores the response in `data`
@@ -21,22 +29,28 @@ function Trades() {
   return (
     <section>
       <h2>Trades</h2>
+
       <input
         aria-label="Filter by status"
         placeholder="status filter (PENDING/MATCHED/…)"
         value={search}
         onChange={(e) => setSearch(e.target.value.toUpperCase())}
       />
+
       <DataTable>
-        <DataTable.Header columns={[
-          { key: 'tradeRef', label: 'Ref' },
-          { key: 'symbol',   label: 'Symbol' },
-          { key: 'qty',      label: 'Qty' },
-          { key: 'price',    label: 'Price' },
-          { key: 'status',   label: 'Status' },
-        ]} />
-        {/* TODO(TICKET-ADV114): render a DataTable.Body with `rows={data.items}`
-            and a `render` prop that returns one <span> per column. */}
+        <DataTable.Header
+          columns={[
+            { key: 'tradeRef', label: 'Ref' },
+            { key: 'symbol',   label: 'Symbol' },
+            { key: 'qty',      label: 'Qty' },
+            { key: 'price',    label: 'Price' },
+            { key: 'status',   label: 'Status' },
+          ]}
+        />
+
+        {/* TODO(TICKET-ADV114): DataTable.Body with rows={data.items}
+            and render={(t) => <TradeRow trade={t} onClick={handleSelect} />} */}
+
         <DataTable.Pagination
           page={page}
           totalPages={Math.max(1, data.totalPages)}
