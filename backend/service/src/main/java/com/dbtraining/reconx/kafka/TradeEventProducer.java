@@ -43,6 +43,8 @@ public class TradeEventProducer {
     private final KafkaTemplate<String, TradeEvent> template;
 
     public void publish(TradeEvent event) {
-        throw new UnsupportedOperationException("TICKET-ADV129");
+        log.debug("Publishing TradeEvent eventId={} ref={} type={}",
+                  event.eventId(), event.tradeRef(), event.eventType());
+        template.send(TOPIC, event.tradeRef(), event);
     }
 }

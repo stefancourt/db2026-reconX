@@ -1,5 +1,6 @@
 package com.dbtraining.reconx.service;
 
+import com.dbtraining.reconx.dto.TradeMapper;
 import com.dbtraining.reconx.dto.TradeRequest;
 import com.dbtraining.reconx.exception.DuplicateTradeRefException;
 import com.dbtraining.reconx.exception.TradeNotFoundException;
@@ -44,15 +45,31 @@ public class TradeService {
     private final InstrumentRepository instRepo;
     private final TradeEventProducer events;
     private final TradeMetrics metrics;
+    private final TradeMapper mapper;
 
     public Trade create(TradeRequest req, String actor) {
-        // TODO(TICKET-ADV064): reject duplicate tradeRef via DuplicateTradeRefException,
-        //   build a new Trade with instrument + counterparty looked up from
-        //   their repos (throw TradeNotFoundException on miss), status = "PENDING",
-        //   save, then:
-        //     - metrics.incrementTradeCreated() + metrics.recordTradeValue(qty*price) — TICKET-ADV083
-        //     - events.publish(new TradeEvent(... TRADE_CREATED ... actor ...)) — TICKET-ADV129
-        throw new UnsupportedOperationException("TICKET-ADV064");
+        if (tradeRepo.findByTradeRef(req.tradeRef()).isPresent()) {
+            throw new DuplicateTradeRefException("tradeRef already exists: " + req.tradeRef());
+        }
+        var instrument = instRepo.findById(req.instrumentId())
+            .orElseThrow(() -> new TradeNotFoundException("instrument id=" + req.instrumentId()));
+        var counterparty = cpRepo.findById(req.counterpartyId())
+            .orElseThrow(() -> new TradeNotFoundException("counterparty id=" + req.counterpartyId()));
+
+        Trade trade = mapper.toEntity(req);
+        trade.setInstrument(instrument);
+        trade.setCounterparty(counterparty);
+
+        Trade saved = tradeRepo.save(trade);
+
+        metrics.incrementTradeCreated();
+        metrics.recordTradeValue(req.quantity().multiply(req.price()).doubleValue());
+
+        events.publish(new TradeEvent(
+            UUID.randomUUID(), saved.getTradeRef(),
+            TradeEvent.EventType.TRADE_CREATED, Instant.now(), actor, null, null));
+
+        return saved;
     }
 
     public Trade update(Long id, TradeRequest req, String actor) {
