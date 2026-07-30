@@ -1,6 +1,6 @@
-// TICKET-ADV120 — useMemo for portfolio-value calc.
-// TICKET-ADV116 — useTradeStream live feed.
-import React from 'react';
+// useMemo for portfolio-value calc.
+// useTradeStream live feed.
+import React, { useMemo } from 'react';
 import { withAuth } from '@components/withAuth.jsx';
 import { useTradeStream } from '@hooks/useTradeStream.js';
 
@@ -16,19 +16,22 @@ function StatCard({ label, value }) {
 function Dashboard() {
   const { trades, isConnected } = useTradeStream();
 
-  // TODO(TICKET-ADV120): use useMemo to compute `portfolioValue` =
-  //                     sum(trades[i].quantity * trades[i].price).
-  //                     Memoise on `trades` so it doesn't recompute every render.
+  const portfolioValue = useMemo(
+    () => trades.reduce((sum, t) => sum + (t.quantity * t.price || 0), 0),
+    [trades]
+  );
 
-  // TODO(TICKET-ADV120): derive `matched` (status === 'MATCHED') and
-  //                     `breaks` (status in ['UNMATCHED','DISPUTED']) counts.
+  const matched = trades.filter((t) => t.status === 'MATCHED').length;
+  const breaks  = trades.filter((t) => ['UNMATCHED','DISPUTED'].includes(t.status)).length;
 
   return (
     <section>
       <h2>Dashboard</h2>
       <div className="stat-grid">
-        {/* TODO(TICKET-ADV120): render four <StatCard>s — Portfolio value,
-            Trades streamed, Matched, Open breaks. */}
+        <StatCard label="Portfolio value (USD)" value={portfolioValue.toLocaleString()} />
+        <StatCard label="Trades streamed" value={trades.length} />
+        <StatCard label="Matched" value={matched} />
+        <StatCard label="Open breaks" value={breaks} />
       </div>
       <div role="status" aria-live="polite">
         SSE: {isConnected ? 'connected' : 'disconnected'}
