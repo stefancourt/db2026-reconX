@@ -1,50 +1,39 @@
 package com.dbtraining.reconx.kafka;
 
 import com.dbtraining.reconx.dto.TradeEvent;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
 /**
  * ============================================================================
- * TICKET-ADV129 — TradeEventProducer
+ * TradeEventProducer
  *
- * WHAT:    Publishes TradeEvent messages to the `trade-events` Kafka topic.
- * HOW:     KafkaTemplate<String, TradeEvent>. Key = tradeRef so that all
- *          events for the same trade hash to the same partition and
- *          preserve ordering.
+ * WHAT:    Publishes TradeEvent to the trade-events topic.
+ * HOW:     Key = tradeRef (so all events for a single trade go to the same
+ *          partition and preserve ordering).
  * WHY:     Out-of-order events for the same trade would make event sourcing
- *          impossible (you'd "apply" CREATE after UPDATE).
- * OBSERVE: Kafdrop -> `trade-events` shows one message per published event,
+ *          impossible.
+ * OBSERVE: Kafdrop → trade-events topic shows one message per published event,
  *          partitioned by tradeRef.
- * ============================================================================
- *
- *  TODO(TICKET-ADV129):
- *    public void publish(TradeEvent event) {
- *        log.debug("Publishing TradeEvent eventId={} ref={} type={}",
- *                  event.eventId(), event.tradeRef(), event.eventType());
- *        template.send(TOPIC, event.tradeRef(), event);
- *    }
- *
- *  GOTCHA: NEVER let a Kafka publish failure roll back the DB transaction.
- *          Publish AFTER commit (use TransactionSynchronizationManager or
- *          @TransactionalEventListener), or accept eventual consistency.
  * ============================================================================
  */
 @Component
-@Slf4j
-@RequiredArgsConstructor
 public class TradeEventProducer {
 
-    // static final — initialised inline, so @RequiredArgsConstructor skips it.
+    private static final Logger log = LoggerFactory.getLogger(TradeEventProducer.class);
     private static final String TOPIC = "trade-events";
 
     private final KafkaTemplate<String, TradeEvent> template;
 
+    public TradeEventProducer(KafkaTemplate<String, TradeEvent> template) {
+        this.template = template;
+    }
+
     public void publish(TradeEvent event) {
         log.debug("Publishing TradeEvent eventId={} ref={} type={}",
-                  event.eventId(), event.tradeRef(), event.eventType());
+                event.eventId(), event.tradeRef(), event.eventType());
         template.send(TOPIC, event.tradeRef(), event);
     }
 }
