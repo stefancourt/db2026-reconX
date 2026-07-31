@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ ============================================================================
+ TICKET-ADV136 — dlq_messages
+ WHAT:    One row per message that exhausted its retries and landed on a
+          `*-dlq` topic. Written by DlqConsumer, deleted by the admin replay
+          endpoint once the message is re-published.
+ WHY:     Kafka retention eventually drops the DLQ record; the ops audit of
+          "what failed, when, and why" has to outlive it. event_id is unique
+          so a redelivered DLQ record cannot create a duplicate inbox row.
+ OBSERVE: After a listener throws its retries away, SELECT * FROM dlq_messages
+          shows the original topic, partition, offset and exception message.
+ ============================================================================
+-->
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                            http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <changeSet id="011-create-dlq-messages" author="trainer">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="dlq_messages"/>
+            </not>
+        </preConditions>
+        <createTable tableName="dlq_messages">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="event_id" type="VARCHAR(36)"><constraints nullable="false" unique="true"/></column>
+            <column name="trade_ref" type="VARCHAR(30)"/>
+            <column name="original_topic" type="VARCHAR(100)"><constraints nullable="false"/></column>
+            <!-- partition / offset are SQL reserved words — hence the prefixes. -->
+            <column name="dlq_partition" type="INT"><constraints nullable="false"/></column>
+            <column name="record_offset" type="BIGINT"><constraints nullable="false"/></column>
+            <column name="payload" type="CLOB"/>
+            <column name="reason" type="CLOB"/>
+            <column name="first_seen" type="TIMESTAMP"><constraints nullable="false"/></column>
+        </createTable>
+        <createIndex tableName="dlq_messages" indexName="idx_dlq_messages_trade_ref">
+            <column name="trade_ref"/>
+        </createIndex>
+        <rollback>
+            <dropTable tableName="dlq_messages"/>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>
