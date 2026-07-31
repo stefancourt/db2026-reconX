@@ -45,6 +45,48 @@ body {
   min-height: 100vh;
 }
 
+/* TICKET-ADV106 - File: static-dashboard/css/style.css — table */
+.table-scroll {
+  /* CRITICAL: no overflow:hidden ANYWHERE up the ancestor chain, or
+  sticky header breaks. overflow:auto is fine. */
+  overflow: auto;
+  max-height: 60vh;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-sm);
+}
+.data-table th,
+.data-table td {
+  padding: var(--space-2) var(--space-3);
+  text-align: left;
+  border-bottom: 1px solid var(--color-border);
+  white-space: nowrap;
+}
+.data-table thead th {
+  position: sticky;
+  top: 0;
+  background: var(--color-bg-alt);
+  cursor: pointer;
+  user-select: none;
+  z-index: 1;
+}
+.data-table thead th[aria-sort="ascending"]::after  { content: " ▲"; }
+.data-table thead th[aria-sort="descending"]::after { content: " ▼"; }
+
+.resize-handle {
+  display: inline-block;
+  width: 4px;
+  height: 16px;
+  cursor: col-resize;
+  background: var(--color-border);
+  margin-left: var(--space-2);
+  vertical-align: middle;
+}
+
 /* TICKET-ADV105 — tablet -> sidebar collapses */
 @media (max-width: 1024px) {
   body { grid-template-columns: 180px 1fr; }
@@ -78,3 +120,4 @@ body {
 
 button { padding: var(--space-1) var(--space-2); border: 1px solid var(--color-border); background: transparent; color: inherit; border-radius: var(--radius); cursor: pointer; }
 :focus-visible { outline: 2px solid var(--color-gold); outline-offset: 2px; }
+

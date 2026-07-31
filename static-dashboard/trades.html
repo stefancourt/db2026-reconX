@@ -1,0 +1,15 @@
+<!-- File: static-dashboard/trades.html — table fragment -->
+<div class="table-scroll">
+    <table class="data-table" id="trades-table">
+        <thead>
+            <tr>
+                <th data-col="tradeRef"    data-dir="asc">Trade Ref <span class="resize-handle"></span></th>
+                <th data-col="symbol"      data-dir="asc">Instrument <span class="resize-handle"></span></th>
+                <th data-col="quantity"    data-dir="asc" data-type="number">Quantity <span class="resize-handle"></span></th>
+                <th data-col="price"       data-dir="asc" data-type="number">Price <span class="resize-handle"></span></th>
+                <th data-col="status"      data-dir="asc">Status <span class="resize-handle"></span></th>
+            </tr>
+        </thead>
+        <tbody id="trades-tbody"><!-- rows injected by JS --></tbody>
+    </table>
+</div>
