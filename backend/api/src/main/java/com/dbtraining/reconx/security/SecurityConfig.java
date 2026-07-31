@@ -52,6 +52,10 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.DELETE, "/v1/trades/**").hasRole("ADMIN")
                 .requestMatchers("/v1/recon/**").hasAnyRole("RECON_ANALYST","ADMIN")
                 .requestMatchers("/v1/audit/**").hasAnyRole("RECON_ANALYST","ADMIN")
+                // TICKET-ADV136 — DLQ replay mutates the event stream: ADMIN only.
+                // @PreAuthorize on the controller says the same thing; the filter
+                // chain rule is what keeps method security from being the only guard.
+                .requestMatchers("/v1/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
             )
             .headers(h -> h.frameOptions(f -> f.disable()))   // for /h2 dev console

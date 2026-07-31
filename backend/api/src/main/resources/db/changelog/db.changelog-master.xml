@@ -27,5 +27,6 @@
     <include file="changes/008-seed.xml"          relativeToChangelogFile="true"/>
     <include file="changes/009-envers.xml"        relativeToChangelogFile="true"/>
     <include file="changes/010-trades-deleted-at.xml" relativeToChangelogFile="true"/>
+    <include file="changes/011-dlq-messages.xml"  relativeToChangelogFile="true"/>
 
 </databaseChangeLog>
