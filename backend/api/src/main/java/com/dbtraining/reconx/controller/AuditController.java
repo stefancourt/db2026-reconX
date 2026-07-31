@@ -24,6 +24,8 @@ public class AuditController {
 
     private final AuditLogRepository auditRepo;
 
+    public AuditController(AuditLogRepository auditRepo) { this.auditRepo = auditRepo; }
+
     @GetMapping("/trades/{tradeRef}")
     @Operation(summary = "Get audit history for a trade (by tradeRef)")
     public List<AuditLogEntry> history(@PathVariable String tradeRef) {
@@ -33,8 +35,7 @@ public class AuditController {
     @GetMapping("/trades/{tradeRef}/events")
     @Operation(summary = "Stream of all Kafka-sourced events for a trade")
     public List<AuditLogEntry> events(@PathVariable String tradeRef) {
-        // TODO(TICKET-ADV138): once the audit-log Kafka consumer is in place,
-        //   return auditRepo.findByTradeRefOrderByEventTimestampAsc(tradeRef).
-        return Collections.emptyList();
+        return auditRepo.findByTradeRefOrderByEventTimestampAsc(tradeRef);  
     }
 }
+
