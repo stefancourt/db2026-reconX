@@ -1,0 +1,47 @@
+apiVersion: 1
+groups:
+  - orgId: 1
+    name: kafka-alerts
+    folder: ReconX
+    interval: 1m
+    rules:
+      - uid: kafkadlqmessages
+        title: KafkaDlqMessages
+        condition: A
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 60
+              to: 0
+            datasourceUid: reconx-prometheus
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 0
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - A
+                  reducer:
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expr: sum(kafka_consumer_records_consumed_total{topic="trade-events-dlq"})
+              instant: true
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: A
+              type: math
+        noDataState: OK
+        execErrState: Error
+        for: 1m
+        annotations:
+          summary: Messages in trade-events DLQ
+          description: At least one message has been DLQ'd in the last minute. Inspect /api/v1/admin/dlq.
+        labels:
+          severity: critical
