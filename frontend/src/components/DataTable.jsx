@@ -1,11 +1,16 @@
 // TICKET-ADV114 — Compound <DataTable> with Header / Body / Pagination subcomponents.
-import React, { createContext, useContext } from 'react';
+import React, { createContext, useMemo, useContext } from 'react';
 
 const DataTableContext = createContext({ sort: null, page: 0, size: 20 });
 
 export default function DataTable({ children, sort, page = 0, size = 20, onSortChange }) {
+  const contextValue = useMemo(
+    () => ({ sort, page, size, onSortChange }),
+    [sort, page, size, onSortChange]
+  );
+
   return (
-    <DataTableContext.Provider value={{ sort, page, size, onSortChange }}>
+    <DataTableContext.Provider value={contextValue}>
       <div className="data-table">{children}</div>
     </DataTableContext.Provider>
   );
