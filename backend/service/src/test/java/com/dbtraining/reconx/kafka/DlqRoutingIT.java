@@ -43,7 +43,7 @@ class DlqRoutingIT {
 
     @MockBean ReconciliationEngine reconEngine;
 
-    @test
+    @Test
     void failingConsumerRoutesToDlq() {
         Mockito.doThrow(new RuntimeException("boom"))
             .when(reconEngine).scheduleRecon(Mockito.anyString());
