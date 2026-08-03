@@ -1,0 +1,19 @@
+# TICKET-ADV146 — repo-root build context for backend/Dockerfile.
+# Keep the context small: only backend/ and recon-audit-starter/ sources ship.
+.git/
+.github/
+.idea/
+.vscode/
+.claude/
+**/target/
+**/node_modules/
+frontend/dist/
+day*-solved-files/
+student-guides/
+diagrams/
+static-dashboard/
+monitoring/
+db/
+*.iml
+*.log
+.DS_Store
