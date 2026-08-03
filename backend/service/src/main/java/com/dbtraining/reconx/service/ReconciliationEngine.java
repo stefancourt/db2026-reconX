@@ -51,17 +51,17 @@ public class ReconciliationEngine {
     public List<ReconResult> reconcile(List<TradeType> internal,
                                        List<TradeType> external,
                                        ReconciliationRule rule) {
-        // TODO(TICKET-ADV033): build a Map<tradeRef, TradeType> from `external`
-        //   (O(1) lookups beat O(n*m) nested iteration), then parallelStream
-        //   over `internal` and call matchOne(in, externalByRef.get(...), rule)
-        //   for each. Guard against null/empty inputs (TICKET-ADV047).
-        //   HINT:
-        //     Map<String, TradeType> externalByRef = external.stream()
-        //         .collect(Collectors.toMap(t -> t.tradeRef().value(), Function.identity(), (a, b) -> a));
-        //     return internal.parallelStream()
-        //         .map(in -> matchOne(in, externalByRef.get(in.tradeRef().value()), rule))
-        //         .toList();
-        throw new UnsupportedOperationException("TICKET-ADV033");
+        // TICKET-ADV047: guard against null/empty inputs
+        if (internal == null || internal.isEmpty()) return List.of();
+        List<TradeType> externalSafe = (external == null) ? List.of() : external;
+
+        // index externals by tradeRef for O(1) lookups — (a, b) -> a handles duplicate refs
+        Map<String, TradeType> externalByRef = externalSafe.stream()
+                .collect(Collectors.toMap(t -> t.tradeRef().value(), Function.identity(), (a, b) -> a));
+
+        return internal.parallelStream()
+                .map(in -> matchOne(in, externalByRef.get(in.tradeRef().value()), rule))
+                .toList();
     }
 
     /**
@@ -83,18 +83,26 @@ public class ReconciliationEngine {
     }
 
     private ReconResult matchOne(TradeType internal, TradeType external, ReconciliationRule rule) {
-        // TODO(TICKET-ADV033): if external is null return ReconResult.breakResult(ref, "MISSING_EXTERNAL", ...).
-        //   Otherwise pull priceQty() for both sides, compare via rule.matches(...),
-        //   return ReconResult.matched(ref) or breakResult(ref, "VALUE_MISMATCH", details).
-        throw new UnsupportedOperationException("TICKET-ADV033");
+        String ref = internal.tradeRef().value();
+        if (external == null) {
+            return ReconResult.breakResult(ref, "MISSING_EXTERNAL", "No external trade found for " + ref);
+        }
+        BigDecimal[] ip = priceQty(internal);
+        BigDecimal[] ep = priceQty(external);
+        if (rule.matches(ip[0], ip[1], ep[0], ep[1])) {
+            return ReconResult.matched(ref);
+        }
+        return ReconResult.breakResult(ref, "VALUE_MISMATCH",
+                "price/qty drift exceeded rule=" + rule.name());
     }
 
-    /** TICKET-ADV018 — exhaustive switch over the sealed hierarchy. */
+    /** Exhaustive switch over the sealed TradeType hierarchy — compiler enforces all cases handled. */
     private BigDecimal[] priceQty(TradeType t) {
-        // TODO(TICKET-ADV018): switch over the sealed TradeType hierarchy
-        //   (EquityTrade, FXTrade, BondTrade, DerivativeTrade) and return a
-        //   BigDecimal[]{price, qty}. The compiler enforces exhaustiveness —
-        //   omit a case and the build fails.
-        throw new UnsupportedOperationException("TICKET-ADV018");
+        return switch (t) {
+            case EquityTrade e     -> new BigDecimal[]{ e.price(),     e.quantity()     };
+            case FXTrade f         -> new BigDecimal[]{ f.fxRate(),    f.notionalCcy1() };
+            case BondTrade b       -> new BigDecimal[]{ b.faceValue(), BigDecimal.ONE   };
+            case DerivativeTrade d -> new BigDecimal[]{ d.strike(),    d.quantity()     };
+        };
     }
 }
