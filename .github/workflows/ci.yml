@@ -41,27 +41,27 @@ jobs:
         distribution: 'temurin'
         cache: maven
     - name: Liquibase validate
-        working-directory: backend
-        run: ./mvnw -B liquibase:validate || true
+      working-directory: backend
+      run: ./mvnw -B liquibase:validate || true
     - name: Build + test
-        working-directory: backend
-        run: ./mvnw -B verify
+      working-directory: backend
+      run: ./mvnw -B verify
     - name: Coverage gate
-        working-directory: backend
-        env:
-          # Trainer-copy baseline. Day-6 + Day-10 guides task
-          # students with raising this to 85% over the programme. Bump it as
-          # the team's coverage actually climbs; don't ship a green CI by
-          # softening the bar.
-          MIN_COVERAGE: '10'
-        run: |
-          COVERAGE=$(awk -F',' 'NR>1 { covered+=$5; missed+=$4 } END { print covered / (covered + missed) * 100 }' target/site/jacoco/jacoco.csv 2>/dev/null || echo "0")
-          echo "Line coverage: $COVERAGE%"
-          awk "BEGIN { exit ($COVERAGE >= 10) ? 0 : 1 }"
-      - uses: actions/upload-artifact@v4
-        with:
-          name: jacoco-report
-          path: backend/target/site/jacoco
+      working-directory: backend
+      env:
+        # Trainer-copy baseline. Day-6 + Day-10 guides task
+        # students with raising this to 85% over the programme. Bump it as
+        # the team's coverage actually climbs; don't ship a green CI by
+        # softening the bar.
+        MIN_COVERAGE: '10'
+      run: |
+        COVERAGE=$(awk -F',' 'NR>1 { covered+=$5; missed+=$4 } END { print covered / (covered + missed) * 100 }' target/site/jacoco/jacoco.csv 2>/dev/null || echo "0")
+        echo "Line coverage: $COVERAGE%"
+        awk "BEGIN { exit ($COVERAGE >= 10) ? 0 : 1 }"
+    - uses: actions/upload-artifact@v4
+      with:
+        name: jacoco-report
+        path: backend/target/site/jacoco
 
   frontend-build-and-test:
     runs-on: ubuntu-latest
