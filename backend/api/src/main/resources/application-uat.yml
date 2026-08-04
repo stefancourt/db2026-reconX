@@ -1,7 +1,16 @@
 # =============================================================================
 # TICKET-ADV049 — uat profile: PostgreSQL on docker-compose
+# TICKET-ADV151 — Liquibase migrations on container startup
 # =============================================================================
 spring:
+  liquibase:
+    enabled: true
+    change-log: classpath:/db/changelog/db.changelog-master.xml
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+
   datasource:
     url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB:reconx}
     username: ${POSTGRES_USER:reconx_user}
